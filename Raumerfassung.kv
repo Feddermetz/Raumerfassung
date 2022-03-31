@@ -1,0 +1,64 @@
+<Raumerfassung>:
+
+    automatikstatusanzeige: automatikstatusanzeige
+
+    FloatLayout:
+        size: root.width, root.height
+
+        Button:
+            id:vor-button
+            size_hint: 1/12, 1/9
+            pos_hint: {"x":10/12, "y":2/9}
+            background_normal: 'images\pfeil_vorne.png'
+            background_down: 'images\pfeil_vorne_down.png'
+            on_press: root.fahre_vor()
+
+        Button:
+            id:zurueck-button
+            size_hint: 1/12, 1/9
+            pos_hint: {"x":10/12, "y":0/9}
+            background_normal: 'images\pfeil_hinten.png'
+            background_down: 'images\pfeil_hinten_down.png'
+            on_press: root.fahre_zurueck()
+
+        Button:
+            id:links-button
+            size_hint: 1/12, 1/9
+            pos_hint: {"x":9/12, "y":1/9}
+            background_normal: 'images\pfeil_links.png'
+            background_down: 'images\pfeil_links_down.png'
+            on_press: root.fahre_links()
+
+        Button:
+            id:rechts-button
+            size_hint: 1/12, 1/9
+            pos_hint: {"x":11/12, "y":1/9}
+            background_normal: 'images\pfeil_rechts.png'
+            background_down: 'images\pfeil_rechts_down.png'
+            on_press: root.fahre_rechts()
+
+        Button:
+            id:automatik-button
+            size_hint: 1/4, 1/3
+            pos_hint: {"x":3/4, "y":1/3}
+            text: "Automatikbetrieb fortsetzen"
+            on_press: root.automatik_einschalten()
+
+        Button:
+            id:automatikstatusanzeige
+            disabled: True
+            size_hint: 1/12, 1/9
+            pos_hint: {"x":10/12, "y":1/9}
+            text: " Auto \n ON "
+            background_color: 0, 255, 0, 2
+
+        Button:
+            id:bluetooth-button
+            size_hint: 1/4, 1/3
+            pos_hint: {"x":3/4, "y":2/3}
+            text: "Bluetooth verbinden"
+            on_press: root.verbinde_bluetooth()
+
+<Button>:
+    background_color: 50,50,50,1
+    color: 'black'
