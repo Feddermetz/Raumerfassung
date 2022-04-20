@@ -7,6 +7,7 @@ import sys
 from kivy.app import App
 from kivy.uix.label import Label
 from bleak import BleakScanner, BleakClient
+from mapping import Map
 from bleak.exc import BleakError
 
 
@@ -33,23 +34,30 @@ class Bluetooth_connection:
                         print("Bluetooth-Verbindung erfolgreich hergestellt!")
 
                     await client.start_notify(self.read_characteristic, notification_handler)
-                    try:
-                        while True:
-                            if self.send_request:
-                                await client.write_gatt_char(self.write_characteristic, self.direction)
-                                self.send_request = False
-                            await asyncio.sleep(5.0)
-                    except:
-                        print("Die Verbindung ist aus unbekannten Gründen abgebrochen!")
+                    #try:
+                    while True:
+                        if self.send_request:
+                            await client.write_gatt_char(self.write_characteristic, self.direction)
+                            self.send_request = False
+                        await asyncio.sleep(5.0)
+                        save_received_data()
+                        print(Map.data_now)
+                    #except:
+                        #print("Die Verbindung ist aus unbekannten Gründen abgebrochen!")
                     await client.stop_notify(self.read_characteristic)
 
 
+#Simple notification handler which prints the data received
 def notification_handler(sender, data):
-    #Simple notification handler which prints the data received
-    output_numbers = list(data)
-    print(output_numbers)
+     received_data = data
+     for element in received_data:
+         Map.data_as_bytes.append(element)
+     print(received_data)
 
 def eventloop(function):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(function)
+
+def save_received_data():
+    Map.save_data_now(self=Map)

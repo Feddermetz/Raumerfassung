@@ -8,6 +8,7 @@ import time
 import bluetooth_kommunikation
 from bluetooth_kommunikation import eventloop
 from bluetooth_kommunikation import Bluetooth_connection
+from mapping import Map
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.button import Button
@@ -21,6 +22,7 @@ from kivy.properties import ObjectProperty
 from threading import Thread
 
 Makeblock_connection = Bluetooth_connection()
+Map = Map()
 
 def start_coroutine(routine):
     Loop = asyncio.new_event_loop()
