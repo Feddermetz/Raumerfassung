@@ -1,13 +1,20 @@
 import struct
 from math import sin
 from math import cos
-from math import pi
 from math import radians
+from kivy.graphics import Color
+from kivy.graphics import Rectangle
 
 class Map:
     data_now = [0] * 14
     data_old = [0] * 14
     data_as_bytes = []
+    robot_angle = 0
+    robot_position_x = 0
+    robot_position_y = 0
+    map = [[False]*1000 for i in range(1000)]
+    map_to_draw = False
+    #coordinates_wall = []
 
     def __init__(self):
         self.map = [[False]*1000 for i in range(1000)]
@@ -17,6 +24,11 @@ class Map:
         self.robot_angle = 0
         self.robot_position_x = 500
         self.robot_position_y = 500
+        self.map_to_draw = False
+        self.coordinates_wall = []
+
+    def get_coordinates_wall(self):
+        return self.coordinates_wall
 
     def save_data_now(self):
         #self.data_old.clear(self)
@@ -64,7 +76,10 @@ class Map:
         distances[10] = sin(radians(300)) * self.data_now[10], cos(radians(300)) * self.data_now[10]
         distances[11] = sin(radians(330)) * self.data_now[11], cos(radians(330)) * self.data_now[11]
 
-        coordinates[0] = round(distances[0[0]] + self.robot_position_x, distances[0[1]] + self.robot_position_y)
+        for i in range(12):
+            coordinates[i] = round(self.robot_position_x + distances[i][0]), round(self.robot_position_y + distances[i][1])
+        '''
+        coordinates[0] = round(distances[0][0] + self.robot_position_x), round(distances[0][1] + self.robot_position_y)
         coordinates[1] = round(distances[1[0]] + self.robot_position_x, distances[1[1]] + self.robot_position_y)
         coordinates[2] = round(distances[2[0]] + self.robot_position_x, distances[2[1]] + self.robot_position_y)
         coordinates[3] = round(distances[3[0]] + self.robot_position_x, distances[3[1]] + self.robot_position_y)
@@ -76,7 +91,12 @@ class Map:
         coordinates[9] = round(distances[9[0]] + self.robot_position_x, distances[9[1]] + self.robot_position_y)
         coordinates[10] = round(distances[10[0]] + self.robot_position_x, distances[10[1]] + self.robot_position_y)
         coordinates[11] = round(distances[11[0]] + self.robot_position_x, distances[11[1]] + self.robot_position_y)
-
+        '''
+        for i in range(12):
+            coordinate_x = int(coordinates[i][0])
+            coordinate_y = int(coordinates[i][1])
+            self.map[coordinate_x][coordinate_y] = True
+        '''    
         map[coordinates[0[0]]][coordinates[0[1]]] = True
         map[coordinates[1[0]]][coordinates[1[1]]] = True
         map[coordinates[2[0]]][coordinates[2[1]]] = True
@@ -89,5 +109,10 @@ class Map:
         map[coordinates[9[0]]][coordinates[9[1]]] = True
         map[coordinates[10[0]]][coordinates[10[1]]] = True
         map[coordinates[11[0]]][coordinates[11[1]]] = True
+        '''
+        return coordinates
+
+
+
 
 

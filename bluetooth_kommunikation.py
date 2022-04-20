@@ -18,6 +18,7 @@ class Bluetooth_connection:
         self.direction = None
         self.read_characteristic = f"0000{0xFFF4:x}-0000-1000-8000-00805f9b34fb"
         self.write_characteristic = f"0000{0xFFF1:x}-0000-1000-8000-00805f9b34fb"
+        self.connection_bool = False
 
     async def bluetooth_verbinden(self):
         devices = await BleakScanner.discover()
@@ -29,8 +30,10 @@ class Bluetooth_connection:
                     print("Direkt vor connect")
                     client.connect(timeout=10.0)
                     if not client.is_connected:
+                        self.connection_bool = False
                         print("Fehler, die Bluetooth-Verbindung kann nicht hergestellt werden!")
                     else:
+                        self.connection_bool = True
                         print("Bluetooth-Verbindung erfolgreich hergestellt!")
 
                     await client.start_notify(self.read_characteristic, notification_handler)
@@ -40,7 +43,7 @@ class Bluetooth_connection:
                             await client.write_gatt_char(self.write_characteristic, self.direction)
                             self.send_request = False
                         await asyncio.sleep(5.0)
-                        save_received_data()
+                        update_all()
                         print(Map.data_now)
                     #except:
                         #print("Die Verbindung ist aus unbekannten Gründen abgebrochen!")
@@ -59,5 +62,8 @@ def eventloop(function):
     asyncio.set_event_loop(loop)
     loop.run_until_complete(function)
 
-def save_received_data():
+def update_all():
     Map.save_data_now(self=Map)
+    Map.calculate_robot_position(self=Map)
+    Map.coordinates_wall = Map.update_walls(self=Map)
+    Map.map_to_draw = True

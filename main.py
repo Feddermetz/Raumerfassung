@@ -4,18 +4,20 @@ import asyncio
 import bleak
 import platform
 import sys
-import time
 import bluetooth_kommunikation
 from bluetooth_kommunikation import eventloop
 from bluetooth_kommunikation import Bluetooth_connection
 from mapping import Map
 from kivy.app import App
+from kivy.graphics import Rectangle
+from kivy.graphics import Color
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.widget import Widget
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
+from kivy.clock import Clock
 from bleak import BleakScanner, BleakClient
 from bleak.exc import BleakError
 from kivy.properties import ObjectProperty
@@ -23,6 +25,8 @@ from threading import Thread
 
 Makeblock_connection = Bluetooth_connection()
 Map = Map()
+
+
 
 def start_coroutine(routine):
     Loop = asyncio.new_event_loop()
@@ -54,17 +58,25 @@ class Raumerfassung(Widget):
 
     def verbinde_bluetooth(self):
         start_coroutine(Makeblock_connection.bluetooth_verbinden())
-        time.sleep(1)
+        Clock.schedule_interval(self.draw_data, 5)
 
     def automatik_einschalten(self):
         print("Automatik wird wieder eingeschaltet!")
         Makeblock_connection.direction = b'a'
         Makeblock_connection.send_request = True
 
+    def draw_data(self, dt):
+        with self.canvas:
+            for i in range(len(Map.get_coordinates_wall())):
+                #print(Map.coordinates_wall.len())
+                Color(0.5,0.5,0.5,0.5)
+                self.rect = Rectangle(pos=(Map.coordinates_wall[i][0], Map.coordinates_wall[i][1]), size=(2,2))
+
+
 
 class RaumerfassungApp(App):
     def build(self):
         return Raumerfassung()
 
-
-RaumerfassungApp().run()
+if __name__ == '__main__':
+    RaumerfassungApp().run()
