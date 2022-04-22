@@ -7,7 +7,7 @@ import sys
 import bluetooth_kommunikation
 from bluetooth_kommunikation import eventloop
 from bluetooth_kommunikation import Bluetooth_connection
-from mapping import Map
+from mapping import Roommap
 from kivy.app import App
 from kivy.graphics import Rectangle
 from kivy.graphics import Color
@@ -24,7 +24,6 @@ from kivy.properties import ObjectProperty
 from threading import Thread
 
 Makeblock_connection = Bluetooth_connection()
-Map = Map()
 
 
 
@@ -58,19 +57,35 @@ class Raumerfassung(Widget):
 
     def verbinde_bluetooth(self):
         start_coroutine(Makeblock_connection.bluetooth_verbinden())
-        Clock.schedule_interval(self.draw_data, 5)
+        Clock.schedule_interval(self.draw_data, 5.0)
 
     def automatik_einschalten(self):
         print("Automatik wird wieder eingeschaltet!")
         Makeblock_connection.direction = b'a'
         Makeblock_connection.send_request = True
 
+    def schrittweise_einschalten(self):
+        print("Schrittweiser Betrieb wird wieder eingeschaltet!")
+        Makeblock_connection.direction = b's'
+        Makeblock_connection.send_request = True
+
     def draw_data(self, dt):
+        #print("Bin in draw!")
+        coordinates = Roommap.get_wall_coordinates()
         with self.canvas:
-            for i in range(len(Map.get_coordinates_wall())):
-                #print(Map.coordinates_wall.len())
-                Color(0.5,0.5,0.5,0.5)
-                self.rect = Rectangle(pos=(Map.coordinates_wall[i][0], Map.coordinates_wall[i][1]), size=(2,2))
+            #print("Bin in canvas")
+            Color(1,1,1)
+            #print("Länge der Koordinaten:", len(coordinates))
+            if len(coordinates) > 0:
+                #print("coordinates-Variable:", coordinates[0][1])
+                #print("Länge", len(coordinates))
+                for i in range(12):
+            #    print("Eingegebene Koordinaten: ", coordinates[i][0], coordinates[i][1])
+                    Rectangle(pos=(coordinates[i][0], coordinates[i][1]), size=(2,2))
+            #for i in range(len(Map.get_coordinates_wall())):
+            #    print("Bin in draw_data!")
+            #    Color(0.5,0.5,0.5,0.5)
+            #    self.rect = Rectangle(pos=(Map.coordinates_wall[i][0], Map.coordinates_wall[i][1]), size=(2,2))
 
 
 

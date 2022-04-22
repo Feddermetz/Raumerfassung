@@ -8,6 +8,7 @@ from kivy.app import App
 from kivy.uix.label import Label
 from bleak import BleakScanner, BleakClient
 from mapping import Map
+from mapping import Roommap
 from bleak.exc import BleakError
 
 
@@ -43,8 +44,10 @@ class Bluetooth_connection:
                             await client.write_gatt_char(self.write_characteristic, self.direction)
                             self.send_request = False
                         await asyncio.sleep(5.0)
-                        update_all()
-                        print(Map.data_now)
+                        print(len(Roommap.data_as_bytes))
+                        if len(Roommap.data_as_bytes) > 0:
+                            update_all()
+                        #print(Map.data_now)
                     #except:
                         #print("Die Verbindung ist aus unbekannten Gründen abgebrochen!")
                     await client.stop_notify(self.read_characteristic)
@@ -54,8 +57,8 @@ class Bluetooth_connection:
 def notification_handler(sender, data):
      received_data = data
      for element in received_data:
-         Map.data_as_bytes.append(element)
-     print(received_data)
+         Roommap.data_as_bytes.append(element)
+     #print(received_data)
 
 def eventloop(function):
     loop = asyncio.new_event_loop()
@@ -63,7 +66,7 @@ def eventloop(function):
     loop.run_until_complete(function)
 
 def update_all():
-    Map.save_data_now(self=Map)
-    Map.calculate_robot_position(self=Map)
-    Map.coordinates_wall = Map.update_walls(self=Map)
-    Map.map_to_draw = True
+    Roommap.save_data_now()
+    Roommap.calculate_robot_position()
+    Roommap.coordinates = Roommap.update_walls()
+    Roommap.map_to_draw = True

@@ -39,10 +39,17 @@
 
         Button:
             id:automatik-button
-            size_hint: 1/4, 1/3
+            size_hint: 1/4, 1/6
             pos_hint: {"x":3/4, "y":1/3}
             text: "Automatikbetrieb fortsetzen"
             on_press: root.automatik_einschalten()
+
+        Button:
+            id:schrittweise-button
+            size_hint: 1/4, 1/6
+            pos_hint: {"x":3/4, "y":1/2}
+            text: "Schrittweisebetrieb fortsetzen"
+            on_press: root.schrittweise_einschalten()
 
         Button:
             id:automatikstatusanzeige
