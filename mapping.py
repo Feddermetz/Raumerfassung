@@ -1,9 +1,6 @@
 import struct
-from math import sin
-from math import cos
-from math import radians
-from kivy.graphics import Color
-from kivy.graphics import Rectangle
+from math import sin, cos, radians
+from kivy.graphics import Color, Rectangle
 
 class Map:
 
