@@ -1,3 +1,8 @@
+from kivy.config import Config
+# has to be at the beginning of the main file to work
+Config.set('graphics', 'width', 1280)
+Config.set('graphics', 'height', 720)
+Config.set('graphics', 'resizable', False)
 import logging
 import kivy
 import asyncio
@@ -9,8 +14,8 @@ from bluetooth_kommunikation import eventloop
 from bluetooth_kommunikation import Bluetooth_connection
 from mapping import Roommap
 from kivy.app import App
-from kivy.graphics import Rectangle
-from kivy.graphics import Color
+from kivy.core.window import Window
+from kivy.graphics import Rectangle, Color
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.widget import Widget
@@ -26,48 +31,86 @@ from threading import Thread
 Makeblock_connection = Bluetooth_connection()
 
 
-
 def start_coroutine(routine):
-    Loop = asyncio.new_event_loop()
-    Thread(target=Loop.run_forever, daemon=True).start()
-    Loop.call_soon_threadsafe(asyncio.create_task, routine)
+    loop = asyncio.new_event_loop()
+    Thread(target=loop.run_forever, daemon=True).start()
+    loop.call_soon_threadsafe(asyncio.create_task, routine)
 
-class Raumerfassung(Widget):
-    automatikstatusanzeige = ObjectProperty(None)
 
-    def fahre_vor(self):
+class Mapping(Widget):
+    # automatikstatusanzeige = ObjectProperty(None)
+
+    def turn_left_45(self):
+        print("Drehe 45 Grad links!")
+        Makeblock_connection.direction = b'1'
+        Makeblock_connection.send_request = True
+        #self.ids.left45.source = 'images/arrow_left_45_pressed.png'
+
+    def drive_forward(self):
         print("Fahre vor!")
-        Makeblock_connection.direction = b'f'
+        Makeblock_connection.direction = b'2'
         Makeblock_connection.send_request = True
+        #self.ids.up.source = 'images/arrow_up_pressed.png'
 
-    def fahre_zurueck(self):
+    def turn_right_45(self):
+        print("Drehe 45 Grad rechts!")
+        Makeblock_connection.direction = b'3'
+        Makeblock_connection.send_request = True
+        #self.ids.right45.source = 'images/arrow_right_45_pressed.png'
+
+    def turn_left_90(self):
+        print("Drehe 90 Grad links!")
+        Makeblock_connection.direction = b'4'
+        Makeblock_connection.send_request = True
+        #self.ids.left90.source = 'images/arrow_left_pressed.png'
+
+    def turn_right_90(self):
+        print("Drehe 90 Grad rechts!")
+        Makeblock_connection.direction = b'6'
+        Makeblock_connection.send_request = True
+        #self.ids.right90.source = 'images/arrow_right_pressed.png'
+
+    def turn_left_135(self):
+        print("Drehe 90 Grad links!")
+        Makeblock_connection.direction = b'7'
+        Makeblock_connection.send_request = True
+        #self.ids.left135.source = 'images/arrow_left_135_pressed.png'
+
+    def drive_backward(self):
         print("Fahre zurück!")
-        Makeblock_connection.direction = b'b'
+        Makeblock_connection.direction = b'8'
         Makeblock_connection.send_request = True
+        #self.ids.down.source = 'images/arrow_down_pressed.png'
 
-    def fahre_links(self):
-        print("Fahre links!")
-        Makeblock_connection.direction = b'l'
+    def turn_right_135(self):
+        print("Drehe 135 Grad rechts!")
+        Makeblock_connection.direction = b'9'
         Makeblock_connection.send_request = True
+        #self.ids.right135.source = 'images/arrow_right_135_pressed.png'
 
-    def fahre_rechts(self):
-        print("Fahre rechts!")
-        Makeblock_connection.direction = b'r'
-        Makeblock_connection.send_request = True
-
-    def verbinde_bluetooth(self):
-        start_coroutine(Makeblock_connection.bluetooth_verbinden())
+    def connect_bluetooth(self):
+        start_coroutine(Makeblock_connection.connect_bluetooth())
         Clock.schedule_interval(self.draw_data, 5.0)
+        Clock.schedule_interval(self.show_connection_status, 2.0)
 
+    def show_connection_status(self, dt):
+        if Makeblock_connection.connection_status:
+            self.ids.bluetooth_connection_status.source = 'images/bluetooth_connected.png'
+        else:
+            self.ids.bluetooth_connection_status.source = 'images/bluetooth_disconnected.png'
+
+    # automatic driving mode will probably not be used
+    '''
     def automatik_einschalten(self):
         print("Automatik wird wieder eingeschaltet!")
         Makeblock_connection.direction = b'a'
         Makeblock_connection.send_request = True
-
+    
     def schrittweise_einschalten(self):
         print("Schrittweiser Betrieb wird wieder eingeschaltet!")
         Makeblock_connection.direction = b's'
         Makeblock_connection.send_request = True
+    '''
 
     def draw_data(self, dt):
         #print("Bin in draw!")
@@ -88,10 +131,10 @@ class Raumerfassung(Widget):
             #    self.rect = Rectangle(pos=(Map.coordinates_wall[i][0], Map.coordinates_wall[i][1]), size=(2,2))
 
 
-
-class RaumerfassungApp(App):
+class MappingApp(App):
     def build(self):
-        return Raumerfassung()
+        return Mapping()
+
 
 if __name__ == '__main__':
-    RaumerfassungApp().run()
+    MappingApp().run()

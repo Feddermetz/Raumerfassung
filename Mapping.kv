@@ -1,0 +1,74 @@
+<Mapping>:
+    FloatLayout:
+        pos: 1130, 0
+        size: 50, 50
+
+        Button:
+            id: left45
+            pos: 1130, 100
+            background_normal: 'images/arrow_left_45.png'
+            background_down: 'images/arrow_left_45_pressed.png'
+            on_press: root.turn_left_45()
+
+        Button:
+            id: up
+            pos: 1180, 100
+            background_normal: 'images/arrow_up.png'
+            background_down: 'images/arrow_up_pressed.png'
+            on_press: root.drive_forward()
+
+        Button:
+            id: right45
+            pos: 1230, 100
+            background_normal: 'images/arrow_right_45.png'
+            background_down: 'images/arrow_right_45_pressed.png'
+            on_press: root.turn_right_45()
+
+        Button:
+            id: left90
+            pos: 1130, 50
+            background_normal: 'images/arrow_left.png'
+            background_down: 'images/arrow_left_pressed.png'
+            on_press: root.turn_left_90()
+
+        Image:
+            id: bluetooth_connection_status
+            pos: 1180, 50
+            source: 'images/bluetooth_disconnected.png'
+
+        Button:
+            id: right90
+            pos: 1230, 50
+            background_normal: 'images/arrow_right.png'
+            background_down: 'images/arrow_right_pressed.png'
+            on_press: root.turn_right_90()
+
+        Button:
+            id: left135
+            pos: 1130, 0
+            background_normal: 'images/arrow_left_135.png'
+            background_down: 'images/arrow_left_135_pressed.png'
+            on_press: root.turn_left_135()
+
+        Button:
+            id: down
+            pos: 1180, 0
+            background_normal: 'images/arrow_down.png'
+            background_down: 'images/arrow_down_pressed.png'
+            on_press: root.drive_backward()
+
+        Button:
+            id: right135
+            pos: 1230, 0
+            background_normal: 'images/arrow_right_135.png'
+            background_down: 'images/arrow_right_135_pressed.png'
+            on_press: root.turn_right_1355()
+
+    FloatLayout:
+        size: 150, 50
+        Button:
+            id: connect_bluetooth
+            pos: 1130, 150
+            text: "Bluetooth verbinden"
+            size: 150, 50
+            on_press: root.connect_bluetooth()

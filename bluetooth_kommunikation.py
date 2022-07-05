@@ -1,4 +1,5 @@
 import logging
+import struct
 import kivy
 import asyncio
 import bleak
@@ -19,9 +20,9 @@ class Bluetooth_connection:
         self.direction = None
         self.read_characteristic = f"0000{0xFFF4:x}-0000-1000-8000-00805f9b34fb"
         self.write_characteristic = f"0000{0xFFF1:x}-0000-1000-8000-00805f9b34fb"
-        self.connection_bool = False
+        self.connection_status = False
 
-    async def bluetooth_verbinden(self):
+    async def connect_bluetooth(self):
         devices = await BleakScanner.discover()
         for d in devices:
             if d.name == 'MAKEBLOCK':
@@ -31,10 +32,10 @@ class Bluetooth_connection:
                     print("Direkt vor connect")
                     client.connect(timeout=10.0)
                     if not client.is_connected:
-                        self.connection_bool = False
+                        self.connection_status = False
                         print("Fehler, die Bluetooth-Verbindung kann nicht hergestellt werden!")
                     else:
-                        self.connection_bool = True
+                        self.connection_status = True
                         print("Bluetooth-Verbindung erfolgreich hergestellt!")
 
                     await client.start_notify(self.read_characteristic, notification_handler)
@@ -44,9 +45,10 @@ class Bluetooth_connection:
                             await client.write_gatt_char(self.write_characteristic, self.direction)
                             self.send_request = False
                         await asyncio.sleep(5.0)
-                        print(len(Roommap.data_as_bytes))
-                        if len(Roommap.data_as_bytes) > 0:
-                            update_all()
+                        self.connection_status = client.is_connected
+                        #print(len(Roommap.data_as_bytes))
+                        #if len(Roommap.data_as_bytes) > 0:
+                        update_all()
                         #print(Map.data_now)
                     #except:
                         #print("Die Verbindung ist aus unbekannten Gründen abgebrochen!")
@@ -55,18 +57,23 @@ class Bluetooth_connection:
 
 #Simple notification handler which prints the data received
 def notification_handler(sender, data):
-     received_data = data
-     for element in received_data:
-         Roommap.data_as_bytes.append(element)
-     #print(received_data)
+    received_data = data
+    print('Test')
+    print(received_data)
+    for element in received_data:
+        Roommap.data_as_bytes.append(element)
+
 
 def eventloop(function):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(function)
 
+
 def update_all():
+    #print('Bytearrays: ', Roommap.data_as_bytes)
     Roommap.save_data_now()
-    Roommap.calculate_robot_position()
-    Roommap.coordinates = Roommap.update_walls()
-    Roommap.map_to_draw = True
+
+    #Roommap.calculate_robot_position()
+    #Roommap.coordinates = Roommap.update_walls()
+    #Roommap.map_to_draw = True

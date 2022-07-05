@@ -1,9 +1,7 @@
 import struct
-from math import sin
-from math import cos
-from math import radians
-from kivy.graphics import Color
-from kivy.graphics import Rectangle
+from math import sin, cos, radians
+from kivy.graphics import Color, Rectangle
+
 
 class Map:
 
@@ -11,7 +9,8 @@ class Map:
         self.map = [[False]*1000 for i in range(1000)]
         self.data_now = [0] * 14
         self.data_old = [0] * 14
-        self.data_as_bytes = []
+        self.data_as_bytes = bytearray()
+        #self.data_as_bytes = []
         self.robot_angle = 0
         self.robot_position_x = 500
         self.robot_position_y = 500
@@ -26,24 +25,53 @@ class Map:
         self.data_old = self.data_now
         self.data_now = self.convert_byte_to_float()
         self.data_as_bytes.clear()
-        print(self.data_now)
 
+    def convert_byte_to_float(self):
+        bytebuffer = bytearray()
+        intbuffer = []
+        j = 0
+        for i in range(77):
+            while self.data_as_bytes[j] != 59 and self.data_as_bytes[j] != 10:
+                bytebuffer.append(self.data_as_bytes[j])
+                #print(self.data_as_bytes[j])
+                j = j + 1
+            #print(len(bytebuffer))
+            #print(float(bytebuffer))
+            intbuffer.append(int(bytebuffer))
+            print("Länge intbuffer:")
+            print(len(intbuffer))
+            print(intbuffer)
+            j = j + 1
+            bytebuffer.clear()
+        return intbuffer
+
+    '''
     def convert_byte_to_float(self):
         bytebuffer = bytearray()
         floatbuffer = []
         j = 0
         #print(self.data_as_bytes)
         #print(len(self.data_as_bytes))
-        for i in range(14):
-            while self.data_as_bytes[j] != 10 and j < len(self.data_as_bytes):
+        for i in range(77):
+            print("i:")
+            print(i)
+            print("Länge Bytearray:")
+            print(len(self.data_as_bytes))
+            #while self.data_as_bytes[j] != 10 and j < len(self.data_as_bytes):
+            while self.data_as_bytes[j] != 59 and self.data_as_bytes[j] != 10:
                 bytebuffer.append(self.data_as_bytes[j])
+                #print(self.data_as_bytes[j])
                 j = j + 1
-            #print(bytebuffer)
+            #print(len(bytebuffer))
+            #print(float(bytebuffer))
             floatbuffer.append(float(bytebuffer))
-            #print(floatbuffer)
+            print("Länge floatbuffer:")
+            print(len(floatbuffer))
+            print(floatbuffer)
             j = j + 1
             bytebuffer.clear()
         return floatbuffer
+    '''
 
     def calculate_robot_position(self):
         self.robot_angle = self.robot_angle + self.data_now[13]
@@ -79,6 +107,7 @@ class Map:
 
         #print("Koordinaten:", coordinates)
         #print("Länge Koordinaten:", len(coordinates))
+
 
 Roommap = Map()
 
