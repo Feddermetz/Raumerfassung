@@ -1,5 +1,6 @@
 import struct
 from math import sin, cos, radians
+from time import sleep
 from kivy.graphics import Color, Rectangle
 
 
@@ -10,7 +11,6 @@ class Map:
         self.data_now = [0] * 14
         self.data_old = [0] * 14
         self.data_as_bytes = bytearray()
-        #self.data_as_bytes = []
         self.robot_angle = 0
         self.robot_position_x = 500
         self.robot_position_y = 500
@@ -24,26 +24,25 @@ class Map:
     def save_data_now(self):
         self.data_old = self.data_now
         self.data_now = self.convert_byte_to_float()
+        print('Länge des empfangenen Pakets: ', len(self.data_now))
+        print('Inhalt des empfangenen Pakets: ', self.data_now)
         self.data_as_bytes.clear()
 
     def convert_byte_to_float(self):
         bytebuffer = bytearray()
         intbuffer = []
         j = 0
+        #print('Länge des Bytearrays: ', len(self.data_as_bytes))
         for i in range(77):
-            while self.data_as_bytes[j] != 59 and self.data_as_bytes[j] != 10:
+            # != 10 because 10 is newline in ASCII-Code and the values are separated by a newline
+            while self.data_as_bytes[j] != 10:
                 bytebuffer.append(self.data_as_bytes[j])
-                #print(self.data_as_bytes[j])
                 j = j + 1
-            #print(len(bytebuffer))
-            #print(float(bytebuffer))
             intbuffer.append(int(bytebuffer))
-            print("Länge intbuffer:")
-            print(len(intbuffer))
-            print(intbuffer)
             j = j + 1
             bytebuffer.clear()
         return intbuffer
+
 
     '''
     def convert_byte_to_float(self):

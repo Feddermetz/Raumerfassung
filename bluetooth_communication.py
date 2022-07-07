@@ -13,7 +13,7 @@ from mapping import Roommap
 from bleak.exc import BleakError
 
 
-class Bluetooth_connection:
+class BluetoothConnection:
     def __init__(self):
         self.MAKEBLOCKDevice = None
         self.send_request = False
@@ -39,27 +39,19 @@ class Bluetooth_connection:
                         print("Bluetooth-Verbindung erfolgreich hergestellt!")
 
                     await client.start_notify(self.read_characteristic, notification_handler)
-                    #try:
                     while True:
                         if self.send_request:
                             await client.write_gatt_char(self.write_characteristic, self.direction)
                             self.send_request = False
                         await asyncio.sleep(5.0)
                         self.connection_status = client.is_connected
-                        #print(len(Roommap.data_as_bytes))
-                        #if len(Roommap.data_as_bytes) > 0:
                         update_all()
-                        #print(Map.data_now)
-                    #except:
-                        #print("Die Verbindung ist aus unbekannten Gründen abgebrochen!")
                     await client.stop_notify(self.read_characteristic)
 
 
-#Simple notification handler which prints the data received
+# Simple notification handler which prints the data received
 def notification_handler(sender, data):
     received_data = data
-    print('Test')
-    print(received_data)
     for element in received_data:
         Roommap.data_as_bytes.append(element)
 
@@ -71,9 +63,7 @@ def eventloop(function):
 
 
 def update_all():
-    #print('Bytearrays: ', Roommap.data_as_bytes)
     Roommap.save_data_now()
-
     #Roommap.calculate_robot_position()
     #Roommap.coordinates = Roommap.update_walls()
     #Roommap.map_to_draw = True

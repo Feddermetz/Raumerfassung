@@ -1,5 +1,5 @@
 from kivy.config import Config
-# has to be at the beginning of the main file to work
+# has to be at the beginning of the main file to work for fixed window size
 Config.set('graphics', 'width', 1280)
 Config.set('graphics', 'height', 720)
 Config.set('graphics', 'resizable', False)
@@ -9,9 +9,9 @@ import asyncio
 import bleak
 import platform
 import sys
-import bluetooth_kommunikation
-from bluetooth_kommunikation import eventloop
-from bluetooth_kommunikation import Bluetooth_connection
+import bluetooth_communication
+from bluetooth_communication import eventloop
+from bluetooth_communication import BluetoothConnection
 from mapping import Roommap
 from kivy.app import App
 from kivy.core.window import Window
@@ -28,7 +28,7 @@ from bleak.exc import BleakError
 from kivy.properties import ObjectProperty
 from threading import Thread
 
-Makeblock_connection = Bluetooth_connection()
+Makeblock_connection = BluetoothConnection()
 
 
 def start_coroutine(routine):
@@ -44,49 +44,41 @@ class Mapping(Widget):
         print("Drehe 45 Grad links!")
         Makeblock_connection.direction = b'1'
         Makeblock_connection.send_request = True
-        #self.ids.left45.source = 'images/arrow_left_45_pressed.png'
 
     def drive_forward(self):
         print("Fahre vor!")
         Makeblock_connection.direction = b'2'
         Makeblock_connection.send_request = True
-        #self.ids.up.source = 'images/arrow_up_pressed.png'
 
     def turn_right_45(self):
         print("Drehe 45 Grad rechts!")
         Makeblock_connection.direction = b'3'
         Makeblock_connection.send_request = True
-        #self.ids.right45.source = 'images/arrow_right_45_pressed.png'
 
     def turn_left_90(self):
         print("Drehe 90 Grad links!")
         Makeblock_connection.direction = b'4'
         Makeblock_connection.send_request = True
-        #self.ids.left90.source = 'images/arrow_left_pressed.png'
 
     def turn_right_90(self):
         print("Drehe 90 Grad rechts!")
         Makeblock_connection.direction = b'6'
         Makeblock_connection.send_request = True
-        #self.ids.right90.source = 'images/arrow_right_pressed.png'
 
     def turn_left_135(self):
         print("Drehe 90 Grad links!")
         Makeblock_connection.direction = b'7'
         Makeblock_connection.send_request = True
-        #self.ids.left135.source = 'images/arrow_left_135_pressed.png'
 
     def drive_backward(self):
         print("Fahre zurück!")
         Makeblock_connection.direction = b'8'
         Makeblock_connection.send_request = True
-        #self.ids.down.source = 'images/arrow_down_pressed.png'
 
     def turn_right_135(self):
         print("Drehe 135 Grad rechts!")
         Makeblock_connection.direction = b'9'
         Makeblock_connection.send_request = True
-        #self.ids.right135.source = 'images/arrow_right_135_pressed.png'
 
     def connect_bluetooth(self):
         start_coroutine(Makeblock_connection.connect_bluetooth())
