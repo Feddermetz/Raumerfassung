@@ -29,23 +29,25 @@ class BluetoothConnection:
                 self.MAKEBLOCKDevice = d
                 print("MAKEBLOCK wurde gefunden!")
                 async with BleakClient(self.MAKEBLOCKDevice) as client:
-                    print("Direkt vor connect")
+                    # print("Direkt vor connect")
                     client.connect(timeout=10.0)
-                    if not client.is_connected:
-                        self.connection_status = False
-                        print("Fehler, die Bluetooth-Verbindung kann nicht hergestellt werden!")
-                    else:
+                    if client.is_connected:
                         self.connection_status = True
                         print("Bluetooth-Verbindung erfolgreich hergestellt!")
+                        await client.start_notify(self.read_characteristic, notification_handler)
+                        while True:
+                            if not client.is_connected:
+                                break
+                            if self.send_request:
+                                await client.write_gatt_char(self.write_characteristic, self.direction)
+                                self.send_request = False
 
-                    await client.start_notify(self.read_characteristic, notification_handler)
-                    while True:
-                        if self.send_request:
-                            await client.write_gatt_char(self.write_characteristic, self.direction)
-                            self.send_request = False
-                        await asyncio.sleep(5.0)
-                        self.connection_status = client.is_connected
-                        update_all()
+                            await asyncio.sleep(1.0)
+                            update_all()
+                    else:
+                        self.connection_status = False
+                        print("Bluetooth-Verbindung kann nicht hergestellt werden!")
+
                     await client.stop_notify(self.read_characteristic)
 
 
@@ -63,7 +65,9 @@ def eventloop(function):
 
 
 def update_all():
-    Roommap.save_data_now()
-    #Roommap.calculate_robot_position()
-    #Roommap.coordinates = Roommap.update_walls()
-    #Roommap.map_to_draw = True
+    # 402 is the length of data_as_bytes, when all values are received
+    if len(Roommap.data_as_bytes) >= 402:
+        Roommap.save_data_now()
+        #Roommap.calculate_robot_position()
+        #Roommap.coordinates = Roommap.update_walls()
+        #Roommap.map_to_draw = True
