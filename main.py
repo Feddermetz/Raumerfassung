@@ -80,16 +80,20 @@ class Mapping(Widget):
         Makeblock_connection.direction = b'9'
         Makeblock_connection.send_request = True
 
-    def connect_bluetooth(self):
-        start_coroutine(Makeblock_connection.connect_bluetooth())
+    def manage_bluetooth_connection(self, is_connection_wanted):
+        Makeblock_connection.is_connection_wanted = is_connection_wanted
+        start_coroutine(Makeblock_connection.manage_bluetooth_connection())
         Clock.schedule_interval(self.draw_data, 5.0)
-        Clock.schedule_interval(self.show_connection_status, 2.0)
 
     def show_connection_status(self, dt):
         if Makeblock_connection.connection_status:
             self.ids.bluetooth_connection_status.source = 'images/bluetooth_connected.png'
+            self.ids.connect_bluetooth.disabled = True
+            self.ids.disconnect_bluetooth.disabled = False
         else:
             self.ids.bluetooth_connection_status.source = 'images/bluetooth_disconnected.png'
+            self.ids.connect_bluetooth.disabled = False
+            self.ids.disconnect_bluetooth.disabled = True
 
     # automatic driving mode will probably not be used
     '''
@@ -126,6 +130,9 @@ class Mapping(Widget):
 class MappingApp(App):
     def build(self):
         return Mapping()
+
+    def on_start(self):
+        Clock.schedule_interval(self.root.show_connection_status, 2.0)
 
 
 if __name__ == '__main__':

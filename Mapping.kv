@@ -68,7 +68,12 @@
         size: 150, 50
         Button:
             id: connect_bluetooth
-            pos: 1130, 150
+            pos: 1130, 200
             text: "Bluetooth verbinden"
-            size: 150, 50
-            on_press: root.connect_bluetooth()
+            on_press: root.manage_bluetooth_connection(True)
+
+        Button:
+            id: disconnect_bluetooth
+            pos: 1130, 150
+            text: "Bluetooth trennen"
+            on_press: root.manage_bluetooth_connection(False)

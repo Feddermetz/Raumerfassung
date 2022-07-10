@@ -41,7 +41,7 @@ class Map:
             intbuffer.append(int(bytebuffer))
             j = j + 1
             bytebuffer.clear()
-        print('Länge von data_as_bytes: ', len(self.data_as_bytes))
+        #print('Länge von data_as_bytes: ', len(self.data_as_bytes))
         return intbuffer
 
 

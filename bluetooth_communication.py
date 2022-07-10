@@ -21,34 +21,43 @@ class BluetoothConnection:
         self.read_characteristic = f"0000{0xFFF4:x}-0000-1000-8000-00805f9b34fb"
         self.write_characteristic = f"0000{0xFFF1:x}-0000-1000-8000-00805f9b34fb"
         self.connection_status = False
+        self.is_connection_wanted = False
 
-    async def connect_bluetooth(self):
+    async def manage_bluetooth_connection(self):
+        if not self.is_connection_wanted:
+            return
         devices = await BleakScanner.discover()
         for d in devices:
             if d.name == 'MAKEBLOCK':
                 self.MAKEBLOCKDevice = d
                 print("MAKEBLOCK wurde gefunden!")
                 async with BleakClient(self.MAKEBLOCKDevice) as client:
-                    # print("Direkt vor connect")
-                    client.connect(timeout=10.0)
-                    if client.is_connected:
-                        self.connection_status = True
-                        print("Bluetooth-Verbindung erfolgreich hergestellt!")
-                        await client.start_notify(self.read_characteristic, notification_handler)
-                        while True:
-                            if not client.is_connected:
-                                break
-                            if self.send_request:
-                                await client.write_gatt_char(self.write_characteristic, self.direction)
-                                self.send_request = False
-
-                            await asyncio.sleep(1.0)
-                            update_all()
+                    if self.is_connection_wanted:
+                        client.connect(timeout=10.0)
+                        if client.is_connected:
+                            self.connection_status = True
+                            print("Bluetooth-Verbindung erfolgreich hergestellt!")
+                            await client.start_notify(self.read_characteristic, notification_handler)
+                            while True:
+                                if not client.is_connected:
+                                    self.connection_status = False
+                                    break
+                                if self.send_request:
+                                    await client.write_gatt_char(self.write_characteristic, self.direction)
+                                    self.send_request = False
+                                if not self.is_connection_wanted:
+                                    await client.stop_notify(self.read_characteristic)
+                                    await client.disconnect()
+                                    self.connection_status = False
+                                    break
+                                await asyncio.sleep(1.0)
+                                update_all()
+                        else:
+                            self.connection_status = False
+                            print("Bluetooth-Verbindung kann nicht hergestellt werden!")
                     else:
-                        self.connection_status = False
-                        print("Bluetooth-Verbindung kann nicht hergestellt werden!")
-
-                    await client.stop_notify(self.read_characteristic)
+                        await client.stop_notify(self.read_characteristic)
+                        await client.disconnect()
 
 
 # Simple notification handler which prints the data received
