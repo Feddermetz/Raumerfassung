@@ -49,7 +49,7 @@ char drivingMode = 'a';
 
 //NEU
 int measurements = 180/5;
-const int arrayLength = 75; // 2*180/5 Messwerte + MotorRechts + MotorLinks + GefahreneZeit
+const int arrayLength = 77; // 2*180/5 Messwerte + MotorRechts + MotorLinks + GefahreneZeit
 float distanceData[arrayLength];
 int drivingTime;
 const int RpmGlobal = 60;
@@ -85,55 +85,63 @@ void loop() {
     Initialisieren();
 
     if (measurementsCounter == 0){
-      ScanAndSend();
       measurementsCounter++;
+      ScanAndSend();
     }
     delay(5000);
     switch (inDatC) {
       case '8':
         Drive('f', 0);
         ScanAndSend();
+        PrintData();
         Reset();
         break;
       case '2':
         Drive('b', 0);
         ScanAndSend();
+        PrintData();
         Reset();
         break;
       case '4':
       angle = +90;
         TurnRobotAngle(angle);
         ScanAndSend();
+        PrintData();
         Reset();
         break;
       case '6':
         angle = -90;
         TurnRobotAngle(angle);
         ScanAndSend();
+        PrintData();
         Reset();
         break;  
       case '7': //45° left
         angle = 45;
         TurnRobotAngle(angle);
         ScanAndSend();
+        PrintData();
         Reset();
         break;
       case '9': //45° right
         angle = -45;
         TurnRobotAngle(angle);
         ScanAndSend();
+        PrintData();
         Reset();
         break;
       case '1': //45° left
-        angle = 45;
+        angle = 135;
         TurnRobotAngle(angle);
         ScanAndSend();
+        PrintData();
         Reset();
         break;
       case '3': //45° right
-        angle = -45;
+        angle = -135;
         TurnRobotAngle(angle);
         ScanAndSend();
+        PrintData();
         Reset();
         break;
       case 'a':
@@ -149,6 +157,7 @@ void loop() {
         Serial.println("Fehler, kein Fahrmodus gewählt");
         break;
     }
+    
   }
   else {
      //GetSensorData();
@@ -342,15 +351,35 @@ int GetSensorData(){ //SensorDatenaufnehmen mit 5°Schritten (tatsächlich wenig
   delay(500);
 }
 //#####################################################################################################################
+void PrintData(){
+  for (int j = 0; j<arrayLength; j++){
+       Serial.print(distanceData[j]);
+       Serial.print(";");
+    }
+    Serial.println("");
+
+    for (int i = 0; i < arrayLength; i++) {
+      int dataToSend = distanceData[i];
+      Serial.print(dataToSend);
+      Serial.print(";");
+    //bt.print(distanceData[i]);
+    //bt.print('\n');
+    delay(20);
+  } 
+  Serial.println("");
+  
+}
+//#####################################################################################################################
 void SendMeasurements(){
   Serial.println("Sende Daten..."); 
   for (int i = 0; i < arrayLength; i++) {
-      int dataToSend = distanceData[i]*10;
+      int dataToSend = distanceData[i];
       bt.println(dataToSend);
     //bt.print(distanceData[i]);
     //bt.print('\n');
     delay(20);
   } 
+  bt.print('\n');
 }
 //#####################################################################################################################
 void AutomodeSteps() {

@@ -47,7 +47,7 @@ class Mapping(Widget):
 
     def drive_forward(self):
         print("Fahre vor!")
-        Makeblock_connection.direction = b'2'
+        Makeblock_connection.direction = b'8'
         Makeblock_connection.send_request = True
 
     def turn_right_45(self):
@@ -72,7 +72,7 @@ class Mapping(Widget):
 
     def drive_backward(self):
         print("Fahre zurück!")
-        Makeblock_connection.direction = b'8'
+        Makeblock_connection.direction = b'2'
         Makeblock_connection.send_request = True
 
     def turn_right_135(self):
