@@ -377,7 +377,7 @@ void SendMeasurements(){
       bt.println(dataToSend);
     //bt.print(distanceData[i]);
     //bt.print('\n');
-    delay(20);
+    delay(50);
   } 
   bt.print('\n');
 }

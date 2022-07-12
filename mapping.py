@@ -30,8 +30,8 @@ class Map:
         self.data_old = self.data_now
         self.data_now = self.convert_byte_to_float()
         self.robot.all_Data.append(self.data_now)
-        print('Länge des empfangenen Pakets: ', len(self.data_now))
-        print('Inhalt des empfangenen Pakets: ', self.data_now)
+        #print('Länge des empfangenen Pakets: ', len(self.data_now))
+        #print('Inhalt des empfangenen Pakets: ', self.data_now)
         self.data_as_bytes.clear()
 
     def convert_byte_to_float(self):
@@ -42,6 +42,8 @@ class Map:
         for i in range(77):
             # != 10 because 10 is newline in ASCII-Code and the values are separated by a newline
             while self.data_as_bytes[j] != 10:
+                if j != 0:
+                    print(self.data_as_bytes[j-1])
                 bytebuffer.append(self.data_as_bytes[j])
                 j = j + 1
             intbuffer.append(int(bytebuffer))
