@@ -33,8 +33,10 @@ import RobotData as rd
 dmRobot1 = DataManager()
 
 
-filename = "ersterScanTestumgebung.csv"
-f = open("ersterScanTestumgebung2.csv")
+#f = open("ersterScanTestumgebung2.csv")
+#f = open("ersterScanTestumgebungUss50ms.csv")
+f = open("ersterScanTestumgebungUss100ms.csv")
+
 #f = open("ersterScanTestumgebungSingle.csv")
 j = 0
 for l in f: #Simuliert die eingehenden Bluetoothdaten 
@@ -63,6 +65,9 @@ print("MotorPosen")
 print(dmRobot1.motor_pose_data)
 print("SensorPosen")
 print(dmRobot1.sensor_pose_data)
+print("motordaten")
+print(dmRobot1.motor_positions)
+
 
 #dmRobot1.PlotSensorDistanceData()
 #dmRobot1.PrintData()

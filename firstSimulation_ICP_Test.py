@@ -50,7 +50,6 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
     sp = l.split(sep = ";")
     robot1.SplitDataStep5(sp)
     robot1.CreatePoseDataStep(j)
-    print("ErstelleScandatenpunkte - ####################################################################################")
     robot1.CreateUssDataPosesStep(j)
     robot1.PlotMotorPoseData()
     robot1.PlotSensorPoseData()

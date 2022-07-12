@@ -1,0 +1,34 @@
+void setup()
+{
+  motor1.begin();
+  motor2.begin();
+  Serial.begin(9600);
+
+  Serial.print("Start Motorposition1;Ende Motorposition1");
+  Serial.println("");
+
+  // Test Motorumdrehungen zu Radumdrehungen
+ testende = false; 
+}
+
+void loop()
+{
+
+   /* Test runTurns: getriebeübersetzung rausfinden
+    *   Wir messen start und endeposition des Motors nach fkt runTurns(43, 50);
+    */
+   float mposition;
+   if (testende == false) {
+      for (int i = 0; i<100;i++){
+        mposition = motor2.getCurrentPosition();
+        Serial.print(mposition);
+        Serial.print(";");
+        testRunTurns(43, 50);
+        mposition = motor2.getCurrentPosition();
+        Serial.println(mposition);
+      }
+      testende = true;
+  }
+  
+
+}

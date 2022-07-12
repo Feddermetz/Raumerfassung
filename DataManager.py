@@ -159,16 +159,13 @@ class DataManager(object):
         # Motordaten extrahieren
         
         mdRight = abs(float(newData[74]))
-        mdLeft = abs(float(newData[73]))
-        mdTime = float(newData[75])
+        mdLeft = abs(float(newData[75]))
+        mdTime = float(newData[76])
         
         if (mdRight == 0 and mdLeft != 0):
             mdRight = mdLeft
         elif (mdLeft == 0 and mdRight != 0):
             mdLeft = mdRight
-        
-        
-        
         temp_motorData = ((int(newData[0])),(mdLeft),(mdRight), (mdTime))
         #temp_motorData = ((mdLeft),(mdRight),(mdTime))
        
