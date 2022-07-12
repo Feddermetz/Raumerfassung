@@ -8,8 +8,8 @@ class Map:
 
     def __init__(self):
         self.map = [[False]*1000 for i in range(1000)]
-        self.data_now = [0] * 14
-        self.data_old = [0] * 14
+        self.data_now = [0] * 77
+        self.data_old = [0] * 77
         self.data_as_bytes = bytearray()
         self.robot_angle = 0
         self.robot_position_x = 500

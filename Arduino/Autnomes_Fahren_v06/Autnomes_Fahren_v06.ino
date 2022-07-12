@@ -90,28 +90,40 @@ void loop() {
     }
     delay(5000);
     switch (inDatC) {
-      case 'f':
+      case '8':
         Drive('f', 0);
         ScanAndSend();
         Reset();
         break;
-      case 'b':
+      case '2':
         Drive('b', 0);
         ScanAndSend();
         Reset();
         break;
-      case 'l':
+      case '4':
       angle = +90;
         TurnRobotAngle(angle);
         ScanAndSend();
         Reset();
         break;
-      case 'r':
+      case '6':
         angle = -90;
         TurnRobotAngle(angle);
         ScanAndSend();
         Reset();
         break;  
+      case '7': //45° left
+        angle = 45;
+        TurnRobotAngle(angle);
+        ScanAndSend();
+        Reset();
+        break;
+      case '9': //45° right
+        angle = -45;
+        TurnRobotAngle(angle);
+        ScanAndSend();
+        Reset();
+        break;
       case '1': //45° left
         angle = 45;
         TurnRobotAngle(angle);
@@ -139,9 +151,9 @@ void loop() {
     }
   }
   else {
-     GetSensorData();
-     AutomodeSteps();
-     delay(5000);
+     //GetSensorData();
+     //AutomodeSteps();
+     //delay(5000);
   }
 }
 //#####################################################################################################################
