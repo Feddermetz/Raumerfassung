@@ -55,7 +55,7 @@ int drivingTime;
 const int RpmGlobal = 60;
 const float vGlobal = 115.4284589;
 int angle;
-int drivingStep = 3000; //Fahrdauer pro Befehl, entspricht Wert* vGlobal
+int drivingStep = 10000; //Fahrdauer pro Befehl, entspricht Wert* vGlobal
 
 void setup() {
   Initialisieren();

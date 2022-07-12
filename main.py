@@ -28,6 +28,7 @@ from bleak.exc import BleakError
 from kivy.properties import ObjectProperty
 from threading import Thread
 
+
 Makeblock_connection = BluetoothConnection()
 
 
@@ -89,11 +90,19 @@ class Mapping(Widget):
         if Makeblock_connection.connection_status:
             self.ids.bluetooth_connection_status.source = 'images/bluetooth_connected.png'
             self.ids.connect_bluetooth.disabled = True
-            self.ids.disconnect_bluetooth.disabled = False
+            #self.ids.disconnect_bluetooth.disabled = False
         else:
             self.ids.bluetooth_connection_status.source = 'images/bluetooth_disconnected.png'
             self.ids.connect_bluetooth.disabled = False
-            self.ids.disconnect_bluetooth.disabled = True
+            #self.ids.disconnect_bluetooth.disabled = True
+    def create_data_file(self):
+        print("erstelle Datei")
+        f = open("ScanDaten", "w")
+        for line in Roommap.robot.all_Data:
+            #print ("F " ,pose[0] , " ",pose[1] , " ",pose[2] , file = f)
+            print (line, file = f)
+        f.close()
+        return 0
 
     # automatic driving mode will probably not be used
     '''

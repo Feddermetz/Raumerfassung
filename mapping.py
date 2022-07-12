@@ -4,6 +4,11 @@ from time import sleep
 from kivy.graphics import Color, Rectangle
 
 
+from  DataManager import DataManager
+import poseCalculations as pc
+import RobotData as rd
+
+
 class Map:
 
     def __init__(self):
@@ -17,13 +22,14 @@ class Map:
         self.map_to_draw = False
         self.coordinates = []
         self.wall_coordinates = []
-
+        self.robot = DataManager()
     def get_wall_coordinates(self):
         return self.wall_coordinates
-
+    
     def save_data_now(self):
         self.data_old = self.data_now
         self.data_now = self.convert_byte_to_float()
+        self.robot.all_Data.append(self.data_now)
         print('Länge des empfangenen Pakets: ', len(self.data_now))
         print('Inhalt des empfangenen Pakets: ', self.data_now)
         self.data_as_bytes.clear()
