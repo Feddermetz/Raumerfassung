@@ -34,8 +34,8 @@ dmRobot1 = DataManager()
 
 
 #f = open("ersterScanTestumgebung2.csv")
-#f = open("ersterScanTestumgebungUss50ms.csv")
-f = open("ersterScanTestumgebungUss100ms.csv")
+f = open("ersterScanTestumgebungUss50ms.csv")
+#f = open("ersterScanTestumgebungUss100ms.csv")
 
 #f = open("ersterScanTestumgebungSingle.csv")
 j = 0
