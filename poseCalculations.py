@@ -22,12 +22,14 @@ def CalcPivotPose(oldPose, motorData):
     thetaOld = oldPose[2]
     if distLeft == distRight : #Geradeausfahrt
         # Siehe Bewegungsmodell 2. Fall
+        print("Geradeausfahrt")
         l = distLeft # = distRight
         thetaNew = thetaOld
         xNew = oldPose[0]+l*cos(thetaOld)
         yNew = oldPose[1]+l*sin(thetaOld)
         return(xNew,yNew,thetaNew)
     else: # Kurvenfahrt
+        print("kurvenfahrt!")
         # Siehe Bewegungsmodell 1. Fall
         alpha = (distRight-distLeft)/rd.WheelBaseMm
         R = distLeft/alpha

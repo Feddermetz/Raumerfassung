@@ -34,8 +34,11 @@ dmRobot1 = DataManager()
 
 
 #f = open("ersterScanTestumgebung2.csv")
-f = open("ersterScanTestumgebungUss50ms.csv")
+#f = open("ersterScanTestumgebungUss50ms.csv")
 #f = open("ersterScanTestumgebungUss100ms.csv")
+f = open("ersterScanTestumgebungUss50ms_tstMDATA.csv")
+
+
 
 #f = open("ersterScanTestumgebungSingle.csv")
 j = 0
@@ -53,13 +56,14 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
     #dmRobot1.CreateDerivatives()
     #dmRobot1.CreateCylinderData()
     j += 1
-    dmRobot1.PlotMotorPoseData()
+    
     dmRobot1.PlotSensorPoseData()
-    dmRobot1.PlotScanDataPoints()
-    dmRobot1.PlotMotorPoseData()
+    #dmRobot1.PlotScanDataPoints()
+    #dmRobot1.PlotMotorPoseData()
     #dmRobot1.PlotCylInGlobalCoordinates()
     show()
 f.close()
+
 
 print("MotorPosen")
 print(dmRobot1.motor_pose_data)
@@ -72,14 +76,13 @@ print(dmRobot1.motor_positions)
 #dmRobot1.PlotSensorDistanceData()
 #dmRobot1.PrintData()
 #dmRobot1.PlotRobotDataPolar()
-#dmRobot1.PlotMotorPoseData()
+dmRobot1.PlotMotorPoseData()
 #dmRobot1.PlotSensorPoseData()
 #dmRobot1.PlotScanDataPoints()
 #dmRobot1.PlotMotorPoseData()
 #dmRobot1.PlotCylInGlobalCoordinates()
 show()
 #dmRobot1.PlotScanDerCyl()
-#dmRobot1.PlotMotorPoseData()
 '''
 print("uss_Data")
 print(dmRobot1.uss_Data)
