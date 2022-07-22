@@ -80,6 +80,8 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
     #dmRobot1.PlotMotorPoseData()
     #dmRobot1.PlotCylInGlobalCoordinates()
     show()
+    print('Letze Pose: ' , robot1.sensor_pose_data[j-1])
+    print('Aktuelle Pose: ' , robot1.sensor_pose_data[j])
     j += 1
 f.close()
 
