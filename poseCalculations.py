@@ -22,14 +22,12 @@ def CalcPivotPose(oldPose, motorData):
     thetaOld = oldPose[2]
     if distLeft == distRight : #Geradeausfahrt
         # Siehe Bewegungsmodell 2. Fall
-        print("Geradeausfahrt")
         l = distLeft # = distRight
         thetaNew = thetaOld
         xNew = oldPose[0]+l*cos(thetaOld)
         yNew = oldPose[1]+l*sin(thetaOld)
         return(xNew,yNew,thetaNew)
     else: # Kurvenfahrt
-        print("kurvenfahrt!")
         # Siehe Bewegungsmodell 1. Fall
         alpha = (distRight-distLeft)/rd.WheelBaseMm
         R = distLeft/alpha
@@ -39,7 +37,6 @@ def CalcPivotPose(oldPose, motorData):
         #thetaNew = (thetaOld+alpha)
         xNew = xC+(R+rd.WheelBaseMm/2)*sin(thetaNew)
         yNew = yC+(R+rd.WheelBaseMm/2)*(-1)*cos(thetaNew)
-        
         return (xNew, yNew, thetaNew)
 
 def CalcSensorPose(oldPose, motorData): #Gibt die Pose des Sensors zurück
@@ -82,7 +79,13 @@ def ConvertRevsToDistance(motorData):
     #    distL = (motorData[1]/360) * pi * rd.WheelCircumferenceMm
     #    distR = (motorData[2]/360) * pi * rd.WheelCircumferenceMm
     #else: # Geradeausfahrt, Berechnung über Laufzeit der Motoren und empirisch gemessener Distanz bei 60rmp
-    distL = distR = (motorData[3]/1000)*rd.speed60rpm
+    
+    '''
+    # unser roboter fährt nur geradaus oder dreht sich auf der stelle. Dies ist erkennbar an motordaten und winkel. 
+    # überlegen, ob die distL und distR nach berechung über laufzeit noch um die prozentuale abweichung der motordaten 
+    # angepasst werden soll, dann würden kurven korrekt berechnet werden (calcPivotPoint)
+    '''
+    distL =  distR = (motorData[3]/1000)*rd.speed60rpm 
     return (distL, distR)
 
 '''

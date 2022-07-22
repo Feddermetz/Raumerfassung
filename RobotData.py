@@ -28,9 +28,6 @@ speed60rpm = 115.42 # Geschwindigkeit in mm/s bei 60rpm Motordrehzahl
 ignoreValue = 400
 
 '''
-Überlegung:
-    
-    Laufzeit der Ultraschallmessungen reduzieren
     
 
 
