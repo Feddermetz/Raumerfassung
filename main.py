@@ -1,3 +1,6 @@
+'''
+@author: Robin Justinger
+'''
 from kivy.config import Config
 # has to be at the beginning of the main file to work for fixed window size
 Config.set('graphics', 'width', 1280)

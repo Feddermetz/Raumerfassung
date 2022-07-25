@@ -1,3 +1,6 @@
+'''
+@author: Robin Justinger
+'''
 import logging
 import struct
 import kivy
@@ -50,7 +53,7 @@ class BluetoothConnection:
                                     await client.disconnect()
                                     self.connection_status = False
                                     break
-                                await asyncio.sleep(1.0)
+                                await asyncio.sleep(2.0)
                                 update_all()
                         else:
                             self.connection_status = False
@@ -75,8 +78,9 @@ def eventloop(function):
 
 def update_all():
     # 402 is the length of data_as_bytes, when all values are received
-    if len(Roommap.data_as_bytes) >= 402:
+    if Roommap.data_as_bytes.endswith(b'\n\n'):
         Roommap.save_data_now()
         #Roommap.calculate_robot_position()
         #Roommap.coordinates = Roommap.update_walls()
         #Roommap.map_to_draw = True
+    #print(len(Roommap.data_as_bytes))
