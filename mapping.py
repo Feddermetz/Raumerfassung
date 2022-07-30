@@ -2,7 +2,7 @@ import struct
 from math import sin, cos, radians
 from time import sleep
 from kivy.graphics import Color, Rectangle
-import DataManager
+from DataManager import *
 
 
 class Map:
