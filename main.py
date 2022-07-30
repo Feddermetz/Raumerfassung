@@ -1,3 +1,6 @@
+'''
+@author: Robin Justinger
+'''
 from kivy.config import Config
 # has to be at the beginning of the main file to work for fixed window size
 Config.set('graphics', 'width', 1280)
@@ -28,7 +31,6 @@ from bleak.exc import BleakError
 from kivy.properties import ObjectProperty
 from threading import Thread
 
-
 Makeblock_connection = BluetoothConnection()
 
 
@@ -36,7 +38,6 @@ def start_coroutine(routine):
     loop = asyncio.new_event_loop()
     Thread(target=loop.run_forever, daemon=True).start()
     loop.call_soon_threadsafe(asyncio.create_task, routine)
-
 
 class Mapping(Widget):
     # automatikstatusanzeige = ObjectProperty(None)
@@ -80,29 +81,31 @@ class Mapping(Widget):
         print("Drehe 135 Grad rechts!")
         Makeblock_connection.direction = b'9'
         Makeblock_connection.send_request = True
-
+        
     def manage_bluetooth_connection(self, is_connection_wanted):
         Makeblock_connection.is_connection_wanted = is_connection_wanted
         start_coroutine(Makeblock_connection.manage_bluetooth_connection())
         Clock.schedule_interval(self.draw_data, 5.0)
 
-    def show_connection_status(self, dt):
-        if Makeblock_connection.connection_status:
-            self.ids.bluetooth_connection_status.source = 'images/bluetooth_connected.png'
-            self.ids.connect_bluetooth.disabled = True
-            #self.ids.disconnect_bluetooth.disabled = False
-        else:
-            self.ids.bluetooth_connection_status.source = 'images/bluetooth_disconnected.png'
-            self.ids.connect_bluetooth.disabled = False
-            #self.ids.disconnect_bluetooth.disabled = True
+
     def create_data_file(self):
         print("erstelle Datei")
-        f = open("ScanDaten", "w")
+        f = open("ScanDaten.txt", "w")
         for line in Roommap.robot.all_Data:
             #print ("F " ,pose[0] , " ",pose[1] , " ",pose[2] , file = f)
             print (line, file = f)
         f.close()
         return 0
+
+    def show_connection_status(self, dt):
+        if Makeblock_connection.connection_status:
+            self.ids.bluetooth_connection_status.source = 'images/bluetooth_connected.png'
+            self.ids.connect_bluetooth.disabled = True
+            self.ids.disconnect_bluetooth.disabled = False
+        else:
+            self.ids.bluetooth_connection_status.source = 'images/bluetooth_disconnected.png'
+            self.ids.connect_bluetooth.disabled = False
+            self.ids.disconnect_bluetooth.disabled = True
 
     # automatic driving mode will probably not be used
     '''

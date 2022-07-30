@@ -2,19 +2,15 @@ import struct
 from math import sin, cos, radians
 from time import sleep
 from kivy.graphics import Color, Rectangle
-
-
-from  DataManager import DataManager
-import poseCalculations as pc
-import RobotData as rd
+import DataManager
 
 
 class Map:
 
     def __init__(self):
         self.map = [[False]*1000 for i in range(1000)]
-        self.data_now = [0] * 77
-        self.data_old = [0] * 77
+        self.data_now = [0] * 14
+        self.data_old = [0] * 14
         self.data_as_bytes = bytearray()
         self.robot_angle = 0
         self.robot_position_x = 500
@@ -23,16 +19,17 @@ class Map:
         self.coordinates = []
         self.wall_coordinates = []
         self.robot = DataManager()
+
     def get_wall_coordinates(self):
         return self.wall_coordinates
-    
+
     def save_data_now(self):
         self.data_old = self.data_now
         self.data_now = self.convert_byte_to_float()
-        self.robot.all_Data.append(self.data_now)
-        #print('Länge des empfangenen Pakets: ', len(self.data_now))
-        #print('Inhalt des empfangenen Pakets: ', self.data_now)
+        print('Länge des empfangenen Pakets: ', len(self.data_now))
+        print('Inhalt des empfangenen Pakets: ', self.data_now)
         self.data_as_bytes.clear()
+        self.robot.all_Data.append(self.data_now)
 
     def convert_byte_to_float(self):
         bytebuffer = bytearray()
@@ -42,8 +39,6 @@ class Map:
         for i in range(77):
             # != 10 because 10 is newline in ASCII-Code and the values are separated by a newline
             while self.data_as_bytes[j] != 10:
-                if j != 0:
-                    print(self.data_as_bytes[j-1])
                 bytebuffer.append(self.data_as_bytes[j])
                 j = j + 1
             intbuffer.append(int(bytebuffer))
