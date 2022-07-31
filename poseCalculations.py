@@ -16,7 +16,17 @@ import RobotData as rd
 
 
 def CalcPivotPose(oldPose, motorData):
-    distances = ConvertRevsToDistance(motorData)
+    if (motorData[0] == 0): # forwardmotion
+        #motorData[2] = abs(motorData[2])
+        mRight = abs(motorData[1])
+        mLeft = motorData[2]
+    elif (motorData[0] == 999):
+        mRight = motorData[1]
+        mLeft = motorData[2]*(-1)
+    else: 
+        mRight = motorData[1]
+        mLeft = motorData[2]
+    distances = ConvertRevsToDistance((motorData[0],mRight, mLeft, motorData[3]))
     distLeft = distances[0]
     distRight = distances[1]
     thetaOld = oldPose[2]
@@ -85,7 +95,16 @@ def ConvertRevsToDistance(motorData):
     # überlegen, ob die distL und distR nach berechung über laufzeit noch um die prozentuale abweichung der motordaten 
     # angepasst werden soll, dann würden kurven korrekt berechnet werden (calcPivotPoint)
     '''
-    distL =  distR = (motorData[3]/1000)*rd.speed60rpm 
+    duration = motorData[3]/1000
+    revsRight = motorData[1]/360
+    revsLeft = motorData[2]/360
+    distR = revsLeft * rd.speed60rpm
+    distL = revsRight * rd.speed60rpm
+    
+    #percentageOfDistanceRight = motorData[1]*
+    
+    #distL = (motorData[3]/1000)*rd.speed60rpm 
+    #distR = (motorData[3]/1000)*rd.speed60rpm 
     return (distL, distR)
 
 '''

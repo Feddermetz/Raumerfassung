@@ -131,6 +131,7 @@ class DataManager(object):
                 i += rd.measurementStep
             self.scanData.append(scanDataTuples)
         f.close()
+
     def SplitDataStep5(self, newData):
         self.all_Data.append(newData)
         # Sensordaten extrahieren
@@ -157,22 +158,44 @@ class DataManager(object):
         #self.scanData.append(scanDataTuples)
         self.uss_Data.append(temp_ussData)
         # Motordaten extrahieren
-        
-        mdRight = abs(float(newData[74]))
-        mdLeft = abs(float(newData[75]))
-        mdTime = float(newData[76])
-        
-        if (mdRight == 0 and mdLeft != 0):
-            mdRight = mdLeft
-        elif (mdLeft == 0 and mdRight != 0):
-            mdLeft = mdRight
-        temp_motorData = ((int(newData[0])),(mdLeft),(mdRight), (mdTime))
-        #temp_motorData = ((mdLeft),(mdRight),(mdTime))
-       
+        temp_motorData = self.CheckCorrectMotorData(int(newData[73]),float(newData[74]),float(newData[75]),float(newData[76]))
         self.motor_positions += {temp_motorData}
-        #print("Datensatz " , newData[0])
-        #print ("ScanData: ", temp_ussData)
-        #print ("MotorData: ", temp_motorData)
+
+    def CheckCorrectMotorData(self, angle, rotMRight, rotMLeft, duration):
+        # check and correct invalid motordata (revs != 0 must be corrected)
+        # correction if value 0 occurs
+        if (rotMRight == 0  and rotMLeft == 0):
+            print("Correction needed: both values 0")
+            # calculate motion over duration
+            if (angle == 0):
+                rotMRight = duration/10 *360
+                rotMLeft = duration/10 * 360 *(-1)
+            elif (angle == 999):
+                rotMRight = duration/10 *360  *(-1)
+                rotMLeft = duration/10 * 360
+            else:
+                if angle > 0:#turning left
+                    rotMRight = rotMLeft = duration/10 *360
+                else: #turning right
+                    rotMRight = rotMLeft = duration/10 *360 * (-1)
+        elif (rotMRight == 0  or rotMLeft == 0):
+            print("Correction needed: one value 0")
+            if (angle == 0 or angle == 999): # foreward or backward motion
+                if rotMRight == 0:
+                    rotMRight = rotMLeft * (-1)
+                elif rotMLeft == 0:
+                    rotMLeft = rotMRight * (-1)
+            elif angle > 0:
+                if rotMRight == 0:
+                    rotMRight = rotMLeft 
+                elif rotMLeft == 0:
+                    rotMLeft = rotMRight
+            elif angle < 0:
+                if rotMRight == 0:
+                    rotMRight = rotMLeft * (-1) 
+                elif rotMLeft == 0:
+                    rotMLeft = rotMRight * (-1)
+        return((angle, rotMRight, rotMLeft, duration))
 
     def CreateTestData(self): # Testdaten erzeugen(einfachster Fall, kurzer Flur rechteckig mit Datenschwankungen)
         counter = 1
