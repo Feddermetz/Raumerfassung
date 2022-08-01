@@ -29,7 +29,7 @@ from pylab import *
 from  DataManager import DataManager
 import poseCalculations as pc
 import RobotData as rd
-
+import matplotlib.pyplot as plt
 dmRobot1 = DataManager()
 
 
@@ -44,7 +44,8 @@ f = open("Testlauf_Etage2_GebB_30072022.csv")
 #f = open("ersterScanTestumgebungSingle.csv")
 j = 0
 for l in f: #Simuliert die eingehenden Bluetoothdaten 
-    print(l)
+#if j < 3:
+    print('***************************************************************')
     sp = l.split(sep = ";")
     dmRobot1.SplitDataStep5(sp)
     dmRobot1.CreatePoseDataStep(j)
@@ -53,22 +54,34 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
     #print("Sensor_pose_data Index: ", len(dmRobot1.sensor_pose_data))
     #print(dmRobot1.sensor_pose_data)
 #if j == 0 or j ==9:
+    print(dmRobot1.all_Data[j])
     dmRobot1.CreateUssDataPosesStep(j)
+    print("usspunkte: ", len(dmRobot1.scanDataPoints[j]) )
+    print(dmRobot1.scanDataPoints[j])
+    #print(dmRobot1.scanDataPoints[j])
     #dmRobot1.CreateDerivatives()
     #dmRobot1.CreateCylinderData()
     j += 1
+    #dmRobot1.PlotScanDataPoints()
+    dmRobot1.PlotScanDataPoints()
+    dmRobot1.PlotMotorPoseData()
     
-
-    #dmRobot1.PlotMotorPoseData()
-    #dmRobot1.PlotCylInGlobalCoordinates()
+        #dmRobot1.PlotMotorPoseData()
+        #dmRobot1.PlotCylInGlobalCoordinates()
+    plt.title(sp[0])
     show()
 f.close()
 
+'''
 dmRobot1.PlotSensorPoseData()
 show()
 dmRobot1.PlotScanDataPoints()
 show()
+'''
 
+
+print("motordaten")
+print(dmRobot1.motor_positions)
 print("MotorPosen")
 print(dmRobot1.motor_pose_data)
 print("SensorPosen")
@@ -81,7 +94,8 @@ print(dmRobot1.motor_positions)
 #dmRobot1.PrintData()
 #dmRobot1.PlotRobotDataPolar()
 dmRobot1.PlotMotorPoseData()
-#dmRobot1.PlotSensorPoseData()
+show()
+dmRobot1.PlotSensorPoseData()
 #dmRobot1.PlotScanDataPoints()
 #dmRobot1.PlotMotorPoseData()
 #dmRobot1.PlotCylInGlobalCoordinates()

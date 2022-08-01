@@ -11,43 +11,59 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import scipy.interpolate as si
 
-from math import sin, cos, tan, pi, radians
+from math import sin, cos, tan, pi, radians, degrees
 import RobotData as rd
 
 
 def CalcPivotPose(oldPose, motorData):
+    turn = ''
     if (motorData[0] == 0): # forwardmotion
         #motorData[2] = abs(motorData[2])
         mRight = abs(motorData[1])
-        mLeft = motorData[2]
+        mLeft = abs(motorData[2])
     elif (motorData[0] == 999):
-        mRight = motorData[1]
-        mLeft = motorData[2]*(-1)
-    else: 
-        mRight = motorData[1]
+        mRight = motorData[1]*(-1)
         mLeft = motorData[2]
+    else: #  we need to change sign if robot turns
+        if motorData[0] > 0:
+            # beide motorenwerte sind positiv. wir brauchen: rechts negativ, links positiv
+            turn = 'left'
+            mRight = motorData[1]*(-1)
+            mLeft = abs(motorData[2])
+        else: 
+            # beide motorenwerte sind negativ wir brauchen: rechts negativ, links positiv
+            turn = 'right'
+            mRight = motorData[1]
+            mLeft = abs(motorData[2])
+    print('Values before conversion: ', motorData[0],mRight, mLeft, motorData[3])
     distances = ConvertRevsToDistance((motorData[0],mRight, mLeft, motorData[3]))
     distLeft = distances[0]
     distRight = distances[1]
     thetaOld = oldPose[2]
+    
     if distLeft == distRight : #Geradeausfahrt
         # Siehe Bewegungsmodell 2. Fall
         l = distLeft # = distRight
         thetaNew = thetaOld
         xNew = oldPose[0]+l*cos(thetaOld)
         yNew = oldPose[1]+l*sin(thetaOld)
-        return(xNew,yNew,thetaNew)
     else: # Kurvenfahrt
         # Siehe Bewegungsmodell 1. Fall
         alpha = (distRight-distLeft)/rd.WheelBaseMm
         R = distLeft/alpha
         xC = oldPose[0]-(R+rd.WheelBaseMm/2)*sin(thetaOld)
         yC = oldPose[1]-(R+rd.WheelBaseMm/2)*(-1)*cos(thetaOld)
-        thetaNew = (thetaOld+alpha)%(2*pi)
+        if turn == 'left':
+            thetaNew = (thetaOld+alpha)%(2*pi)
+        elif turn == 'right':
+            thetaNew = (thetaOld-alpha)%(2*pi)
+        else:
+            thetaNew = (thetaOld+alpha)%(2*pi)
         #thetaNew = (thetaOld+alpha)
         xNew = xC+(R+rd.WheelBaseMm/2)*sin(thetaNew)
         yNew = yC+(R+rd.WheelBaseMm/2)*(-1)*cos(thetaNew)
-        return (xNew, yNew, thetaNew)
+    print('New pose: ',xNew, yNew, degrees(thetaNew) )
+    return (xNew, yNew, thetaNew)
 
 def CalcSensorPose(oldPose, motorData): #Gibt die Pose des Sensors zurück
     thetaOld = oldPose[2]

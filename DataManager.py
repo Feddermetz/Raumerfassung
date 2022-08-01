@@ -144,13 +144,13 @@ class DataManager(object):
             #print(index, value)
             if index > 0 and index < 37: #vorderer Sensor
                 #Richtige Winkel zuordnen
-                temp_ussData += {(290+i*rd.angleCorrection,(float(value)))}
+                temp_ussData += {(290+i*rd.angleCorrection,(float(value)*10))}
                 #temp_ussData += {(index,(10*float(value)))}
                 i += rd.measurementStep
                 #print({(290+i*rd.angleCorrection,(float(value)))})
             if index >36 and index < 74: #hinterer Sensor
                 #Richtige Winkel zuordnen
-                temp_ussData += {(110+j*rd.angleCorrection,(float(value)))}
+                temp_ussData += {(110+j*rd.angleCorrection,(float(value)*10))}
                 #temp_ussData += {(index,(10*float(value)))}
                 j += rd.measurementStep
                 #print({(110+j*rd.angleCorrection,(float(value)))})
@@ -168,11 +168,11 @@ class DataManager(object):
             print("Correction needed: both values 0")
             # calculate motion over duration
             if (angle == 0):
-                rotMRight = duration/10 *360
-                rotMLeft = duration/10 * 360 *(-1)
+                rotMRight = duration/10000 *360
+                rotMLeft = duration/10000 * 360 *(-1)
             elif (angle == 999):
-                rotMRight = duration/10 *360  *(-1)
-                rotMLeft = duration/10 * 360
+                rotMRight = duration/10000 *360  *(-1)
+                rotMLeft = duration/10000 * 360
             else:
                 if angle > 0:#turning left
                     rotMRight = rotMLeft = duration/10 *360
@@ -282,7 +282,6 @@ class DataManager(object):
             pose = self.motor_pose_data[counter-1]
         pose_s = pose
         pose = pc.CalcPivotPose(pose, self.motor_positions[counter])
-        #print("Pose: ", pose)
         self.motor_pose_data.append(pose)
         pose_s = pc.CalcSensorPose(pose, self.motor_positions[counter])
         self.sensor_pose_data.append(pose_s)
@@ -309,8 +308,9 @@ class DataManager(object):
         scanLinePoints = []
         for tupel in self.scanData[count]:
             #TODO umsetzen der sensorwerte in punkte in globale karte. sensorposen als ausgangswert benutzen
+           # if tupel[1] < 4000:
             newPoint = pc.CalcPoint(pose, tupel)
-            #print(pose, tupel, newPoint)
+        #print(pose, tupel, newPoint)
             scanLinePoints += {newPoint}
         self.scanDataPoints.append(scanLinePoints)
         #print('ENDE')
@@ -334,7 +334,7 @@ class DataManager(object):
         '''
     def PlotMotorPoseData(self):
         for pose in self.motor_pose_data:
-            plot([x[0] for x in self.motor_pose_data],[x[1] for x in self.motor_pose_data], 'bo')
+            plot([x[0] for x in self.motor_pose_data],[x[1] for x in self.motor_pose_data], 'bo',)
     def PlotSensorPoseData(self):
         for pose in self.sensor_pose_data:
             plot([x[0] for x in self.sensor_pose_data],[x[1] for x in self.sensor_pose_data], 'ro')
