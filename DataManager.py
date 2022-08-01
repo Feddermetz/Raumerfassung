@@ -308,10 +308,10 @@ class DataManager(object):
         scanLinePoints = []
         for tupel in self.scanData[count]:
             #TODO umsetzen der sensorwerte in punkte in globale karte. sensorposen als ausgangswert benutzen
-           # if tupel[1] < 4000:
-            newPoint = pc.CalcPoint(pose, tupel)
+            if tupel[1] < 4000:
+                newPoint = pc.CalcPoint(pose, tupel)
         #print(pose, tupel, newPoint)
-            scanLinePoints += {newPoint}
+                scanLinePoints += {newPoint}
         self.scanDataPoints.append(scanLinePoints)
         #print('ENDE')
     '''

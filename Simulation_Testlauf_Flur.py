@@ -15,6 +15,7 @@ from  DataManager import DataManager
 import poseCalculations as pc
 import RobotData as rd
 import matplotlib.pyplot as plt
+
 dmRobot1 = DataManager()
 
 
@@ -38,7 +39,7 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
     #print(dmRobot1.scanDataPoints[j])
     #dmRobot1.CreateDerivatives()
     #dmRobot1.CreateCylinderData()
-    #dmRobot1.PlotScanDataPoints()
+    dmRobot1.PlotScanDataPoints()
     dmRobot1.PlotMotorPoseData()
     #dmRobot1.PlotMotorPoseData()
     #dmRobot1.PlotCylInGlobalCoordinates()

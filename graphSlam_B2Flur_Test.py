@@ -4,7 +4,6 @@ Created on Mon Aug  1 15:42:17 2022
 
 GraphSlam-Umsetzung mit Testdaten: "Testlauf_Etage2_GebB_30072022.csv"
 
-
 @author: Jan
 """
 
