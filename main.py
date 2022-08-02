@@ -41,7 +41,6 @@ def start_coroutine(routine):
 
 
 class Mapping(Widget):
-    # automatikstatusanzeige = ObjectProperty(None)
 
     def turn_left_45(self):
         print("Drehe 45 Grad links!")
@@ -98,18 +97,16 @@ class Mapping(Widget):
             self.ids.connect_bluetooth.disabled = False
             self.ids.disconnect_bluetooth.disabled = True
 
-    # automatic driving mode will probably not be used
-    '''
-    def automatik_einschalten(self):
-        print("Automatik wird wieder eingeschaltet!")
-        Makeblock_connection.direction = b'a'
-        Makeblock_connection.send_request = True
-    
-    def schrittweise_einschalten(self):
-        print("Schrittweiser Betrieb wird wieder eingeschaltet!")
-        Makeblock_connection.direction = b's'
-        Makeblock_connection.send_request = True
-    '''
+    def set_slam_mode(self, mode):
+        if mode == 'ekf':
+            # TODO: change mode variable, disable other button
+            pass
+        elif mode == 'graph':
+            # TODO: change mode variable, disable other button
+            pass
+        else:
+            # TODO: throw error
+            pass
 
     def draw_data(self, dt):
         #print("Bin in draw!")
@@ -129,6 +126,13 @@ class Mapping(Widget):
             #    Color(0.5,0.5,0.5,0.5)
             #    self.rect = Rectangle(pos=(Map.coordinates_wall[i][0], Map.coordinates_wall[i][1]), size=(2,2))
 
+    def create_csv_file(self):
+        print("erstelle Datei")
+        f = open("ScanDaten", "w")
+        for line in Roommap.data_all:
+            print(line, file=f)
+        f.close()
+        return 0
 
 class MappingApp(App):
     def build(self):

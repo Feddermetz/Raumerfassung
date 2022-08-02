@@ -77,3 +77,21 @@
             pos: 1130, 150
             text: "Bluetooth trennen"
             on_press: root.manage_bluetooth_connection(False)
+
+        Button:
+            id: create_csv
+            pos: 1130, 250
+            text: ".csv erstellen"
+            on_press: root.create_csv_file()
+
+        Button:
+            id: EKF_mode
+            pos: 1130, 300
+            text: "EKF-SLAM"
+            #on_press: root.set_slam_mode('ekf')
+
+        Button:
+            id: Graph_mode
+            pos: 1130, 350
+            text: "Graph-SLAM"
+            #on_press: root.set_slam_mode('graph')

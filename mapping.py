@@ -8,8 +8,9 @@ class Map:
 
     def __init__(self):
         self.map = [[False]*1000 for i in range(1000)]
-        self.data_now = [0] * 14
-        self.data_old = [0] * 14
+        self.data_now = [0] * 77
+        self.data_old = [0] * 77
+        self.data_all = []
         self.data_as_bytes = bytearray()
         self.robot_angle = 0
         self.robot_position_x = 500
@@ -23,6 +24,7 @@ class Map:
 
     def save_data_now(self):
         self.data_old = self.data_now
+        self.data_all.append(self.data_old)
         self.data_now = self.convert_byte_to_float()
         print('Länge des empfangenen Pakets: ', len(self.data_now))
         print('Inhalt des empfangenen Pakets: ', self.data_now)
@@ -32,7 +34,6 @@ class Map:
         bytebuffer = bytearray()
         intbuffer = []
         j = 0
-        #print('Länge des Bytearrays: ', len(self.data_as_bytes))
         for i in range(77):
             # != 10 because 10 is newline in ASCII-Code and the values are separated by a newline
             while self.data_as_bytes[j] != 10:
@@ -41,37 +42,7 @@ class Map:
             intbuffer.append(int(bytebuffer))
             j = j + 1
             bytebuffer.clear()
-        #print('Länge von data_as_bytes: ', len(self.data_as_bytes))
         return intbuffer
-
-
-    '''
-    def convert_byte_to_float(self):
-        bytebuffer = bytearray()
-        floatbuffer = []
-        j = 0
-        #print(self.data_as_bytes)
-        #print(len(self.data_as_bytes))
-        for i in range(77):
-            print("i:")
-            print(i)
-            print("Länge Bytearray:")
-            print(len(self.data_as_bytes))
-            #while self.data_as_bytes[j] != 10 and j < len(self.data_as_bytes):
-            while self.data_as_bytes[j] != 59 and self.data_as_bytes[j] != 10:
-                bytebuffer.append(self.data_as_bytes[j])
-                #print(self.data_as_bytes[j])
-                j = j + 1
-            #print(len(bytebuffer))
-            #print(float(bytebuffer))
-            floatbuffer.append(float(bytebuffer))
-            print("Länge floatbuffer:")
-            print(len(floatbuffer))
-            print(floatbuffer)
-            j = j + 1
-            bytebuffer.clear()
-        return floatbuffer
-    '''
 
     def calculate_robot_position(self):
         self.robot_angle = self.robot_angle + self.data_now[13]
@@ -102,11 +73,7 @@ class Map:
             coordinate_x = int(coordinates[i][0])
             coordinate_y = int(coordinates[i][1])
             self.map[coordinate_x][coordinate_y] = True
-
         self.wall_coordinates = coordinates
-
-        #print("Koordinaten:", coordinates)
-        #print("Länge Koordinaten:", len(coordinates))
 
 
 Roommap = Map()
