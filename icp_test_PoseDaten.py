@@ -8,24 +8,6 @@ Created on Wed Jul 20 16:26:16 2022
 
 Test ICP Algorithmus mit Pose-Daten
 
-
-
-Raum:                          190cm
-    ###################################################################
-    #                                                                 #
-    #                                                                 #
-    #                                                                 #
-    #                                                                 #
-    #     >>>>>>>>>>>>>>>>>>-Roboterpfad->>>>>>>>>>>>>>>>>>>>>>>>     #
-    #                                                                 #
-    #                                                                 # 100cm
-    #                                                                 #
-    #                          100cm                                  #
-    #         ############################################            #
-    #         #                                          #            #
-    #         #                                          #20cm        #
-    #         #                                          #            #
-    ###########                                          ##############
 """
 
 
@@ -42,52 +24,56 @@ nsim = 3
 
   # number of simulation
 
-filename = "ersterScanTestumgebung.csv"
-f = open("ersterScanTestumgebung2.csv")
+#filename = "ersterScanTestumgebung.csv"
+#f = open("ersterScanTestumgebung2.csv")
+#f = open("Testlauf_Etage2_GebB_30072022_all.csv")
+f = open("Testlauf_Etage2_GebB_30072022.csv")
 #f = open("ersterScanTestumgebungSingle.csv")
 j = 0
 for l in f: #Simuliert die eingehenden Bluetoothdaten 
-    print('#######################################################################################')
-    sp = l.split(sep = ";")
-    robot1.SplitDataStep5(sp)
-    robot1.CreatePoseDataStep(j)
-    robot1.CreateUssDataPosesStep(j)
-    robot1.PlotMotorPoseData()
-    robot1.PlotSensorPoseData()
-    print('PoseData: ', robot1.sensor_pose_data)
-    px = np.array([])
-    py = np.array([])
-    cx = np.array([])
-    cy = np.array([])
-    if j != 0:
-        tupel = robot1.sensor_pose_data[j-1]
-        
-        print('Tupel: ' , tupel)
-    # previous point
-        px = np.append(px, tupel[0])
-        py = np.append(py, tupel[1])
-        previous_points = np.vstack((px, py))
-        #print(previous_points)
-        
-        tupel = robot1.sensor_pose_data[j]
-        # current points
-        cx = np.append(cx, tupel[0])
-        cy = np.append(cy,tupel[1])
-        current_points = np.vstack((cx, cy))
-        #print(current_points)
-        
-        for _ in range(nsim):
-            R, T = icp_matching(previous_points, current_points)
-            print("R:", R)
-            print("T:", T)
-    
-    #dmRobot1.PlotScanDataPoints()
-    #dmRobot1.PlotMotorPoseData()
-    #dmRobot1.PlotCylInGlobalCoordinates()
-    show()
-    print('Letze Pose: ' , robot1.sensor_pose_data[j-1])
-    print('Aktuelle Pose: ' , robot1.sensor_pose_data[j])
-    j += 1
+    if j < 15:
+        print('*Datensatz: ', j, ' ********************************************************')
+        sp = l.split(sep = ";")
+        robot1.SplitDataStep5(sp)
+        robot1.CreatePoseDataStep(j)
+        robot1.CreateUssDataPosesStep(j)
+        robot1.PlotMotorPoseData()
+        robot1.PlotSensorPoseData()
+        #print('PoseData: ', robot1.sensor_pose_data)
+        px = np.array([])
+        py = np.array([])
+        cx = np.array([])
+        cy = np.array([])
+        if j != 0:
+            tupel = robot1.sensor_pose_data[j-1]
+            
+            print('Tupel: ' , tupel)
+        # previous point
+            px = np.append(px, tupel[0])
+            py = np.append(py, tupel[1])
+            previous_points = np.vstack((px, py))
+            print(previous_points)
+            
+            tupel = robot1.sensor_pose_data[j]
+            # current points
+            cx = np.append(cx, tupel[0])
+            cy = np.append(cy,tupel[1])
+            current_points = np.vstack((cx, cy))
+            print(current_points)
+            
+            '''
+            for _ in range(nsim):
+                R, T = icp_matching(previous_points, current_points)
+                print("R:", R)
+                print("T:", T)
+        '''
+        #dmRobot1.PlotScanDataPoints()
+        #dmRobot1.PlotMotorPoseData()
+        #dmRobot1.PlotCylInGlobalCoordinates()
+        show()
+        #print('Letze Pose: ' , robot1.sensor_pose_data[j-1])
+        #print('Aktuelle Pose: ' , robot1.sensor_pose_data[j])
+        j += 1
 f.close()
 
 

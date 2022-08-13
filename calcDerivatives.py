@@ -12,25 +12,48 @@ def PlotValues(data,index,style):
     y_val = [x[1] for x in data[index]]
     plt.plot(x_val,y_val, style)
 
-def CalcDerivative(scanLine, minDist):
-    x_val = [float(x[0]) for x in scanLine]
-    y_val = [float(x[1]) for x in scanLine]
-    derivatives = []
-    derivatives+={(x_val[0],0)}
+def CalcDerivative(dataV, dataH, minDist):
+    '''
+    04.08.2022: Anpassungen, da zwischen vorderem und hinterem Sensor unterschieden werden muss. 
+    Hier wird sonst immer ein Objekt gefunden
+    '''
     
-    for i in range(1,len(scanLine) -1):
-        if (y_val[i+1] >= rd.minValidSensorData and y_val[i+1] >= rd.minValidSensorData): # TODO: was wird gemacht wenn eine ungültige Distanz gemessen wird?
-            derivative = (y_val[i+1]-y_val[i-1])/(2+5*rd.angleCorrection) # Berechnung über Differenzenquotien
-            derivatives+=({(x_val[i],derivative)})
+    x_val_v = [float(x[0]) for x in dataV]
+    y_val_v = [float(x[1]) for x in dataV]
+    x_val_h = [float(x[0]) for x in dataH]
+    y_val_h = [float(x[1]) for x in dataH]
+    
+    derivatives_v = []
+    derivatives_v+={(x_val_v[0],0)}
+    
+    for i in range(1,len(x_val) -1):
+        if (y_val_v[i+1] >= rd.minValidSensorData and y_val_v[i+1] >= rd.minValidSensorData): # TODO: was wird gemacht wenn eine ungültige Distanz gemessen wird?
+            derivative = (y_val_v[i+1]-y_val_v[i-1])/(2+5*rd.angleCorrection) # Berechnung über Differenzenquotien
+            derivatives_v +=({(x_val[i],derivative)})
         else:
-            derivatives+=({(x_val[i],0)})
-    derivatives+=({(x_val[(len(scanLine)-1)],0)})
-    return derivatives
+            derivatives_v +=({(x_val[i],0)})
+    derivatives_v+=({(x_val[(len(scanLine)-1)],0)})
+    
+    derivatives_h = []
+    derivatives_h +={(x_val_h[0],0)}
+
+    for i in range(1,len(x_val_h) -1):
+        if (y_val_h[i+1] >= rd.minValidSensorData and y_val_h[i+1] >= rd.minValidSensorData): # TODO: was wird gemacht wenn eine ungültige Distanz gemessen wird?
+            derivative = (y_val_h[i+1]-y_val_h[i-1])/(2+5*rd.angleCorrection) # Berechnung über Differenzenquotien
+            derivatives_h+=({(x_val_h[i],derivative)})
+        else:
+            derivatives_h+=({(x_val_h[i],0)})
+    derivatives_h+=({(x_val_h[(len(dataH)-1)],0)})
+    #derivatives_h+={(x_val_h[0],0)}
+    
+    #return derivatives_v, derivatives_h
+    return 0
 
 def FindCylinders(scan, derivative, jump, minDist):
+
     cylList = []
     onCyl = False
-
+    
     sumRay, sumDepth, rays = 0.0, 0.0, 0
     for index, tupel in enumerate(derivative):
         if onCyl == False and tupel[1] < -jump: # Wir haben einen Zylinder gefunden
@@ -61,8 +84,6 @@ def FindCylinders(scan, derivative, jump, minDist):
             #print(4)
         else:
             z=0
-        #print(onCyl, rays, sumRay, tupel, scan[index])
-    print(cylList)
     return cylList
 def ComputeCartesianKoordinates(cylinderList):
     result = []
@@ -73,7 +94,7 @@ def ComputeCartesianKoordinates(cylinderList):
 def ComputeAngle():
     return 0
 
-
+'''
 if __name__ == '__main__':
     scanData = []
     derivatives = []
@@ -114,7 +135,7 @@ if __name__ == '__main__':
     print(scanData[1])
     print(len(scanData))
     
-    
+    '''
     
     
     

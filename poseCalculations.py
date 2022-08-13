@@ -30,12 +30,12 @@ def CalcPivotPose(oldPose, motorData):
             turn = 'left'
             mRight = motorData[1]*(-1)
             mLeft = abs(motorData[2])
-        else: 
+        else:
             # beide motorenwerte sind negativ wir brauchen: rechts negativ, links positiv
             turn = 'right'
             mRight = motorData[1]
             mLeft = abs(motorData[2])
-    print('Values before conversion: ', motorData[0],mRight, mLeft, motorData[3])
+    #print('Values before conversion: ', motorData[0],mRight, mLeft, motorData[3])
     distances = ConvertRevsToDistance((motorData[0],mRight, mLeft, motorData[3]))
     distLeft = distances[0]
     distRight = distances[1]
@@ -62,7 +62,7 @@ def CalcPivotPose(oldPose, motorData):
         #thetaNew = (thetaOld+alpha)
         xNew = xC+(R+rd.WheelBaseMm/2)*sin(thetaNew)
         yNew = yC+(R+rd.WheelBaseMm/2)*(-1)*cos(thetaNew)
-    print('New pose: ',xNew, yNew, degrees(thetaNew) )
+    #print('New pose: ',xNew, yNew, degrees(thetaNew) )
     return (xNew, yNew, thetaNew)
 
 def CalcSensorPose(oldPose, motorData): #Gibt die Pose des Sensors zurück

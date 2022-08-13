@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 dmRobot1 = DataManager()
 
 
-f = open("Testlauf_Etage2_GebB_30072022.csv")
+f = open("Testlauf_Etage2_GebB_30072022_10.csv")
 
 j = 0
 for l in f: #Simuliert die eingehenden Bluetoothdaten 
@@ -55,7 +55,6 @@ dmRobot1.PlotScanDataPoints()
 show()
 '''
 
-
 print("motordaten")
 print(dmRobot1.motor_positions)
 print("MotorPosen")
@@ -64,7 +63,6 @@ print("SensorPosen")
 print(dmRobot1.sensor_pose_data)
 print("motordaten")
 print(dmRobot1.motor_positions)
-
 
 #dmRobot1.PlotSensorDistanceData()
 #dmRobot1.PrintData()

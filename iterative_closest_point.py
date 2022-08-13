@@ -50,7 +50,7 @@ def icp_matching(previous_points, current_points):
         current_points = (Rt @ current_points) + Tt[:, np.newaxis]
 
         dError = preError - error
-        print("Residual:", error)
+        #print("Residual:", error)
 
         if dError < 0:  # prevent matrix H changing, exit loop
             print("Not Converge ERROR<0...", preError, dError, count)

@@ -43,7 +43,7 @@ nsim = 3
 
 #filename = "ersterScanTestumgebung.csv"
 #f = open("ersterScanTestumgebung2.csv")
-f = open("Testlauf_Etage2_GebB_30072022.csv")
+f = open("Testlauf_Etage2_GebB_30072022_5.csv")
 #f = open("ersterScanTestumgebungSingle.csv")
 j = 0
 for l in f: #Simuliert die eingehenden Bluetoothdaten 
@@ -82,8 +82,6 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
     #dmRobot1.PlotCylInGlobalCoordinates()
     plt.title(sp[0])
     show()
-    print('Letze Pose: ' , robot1.sensor_pose_data[j-1])
-    print('Aktuelle Pose: ' , robot1.sensor_pose_data[j])
     j += 1
 f.close()
 
