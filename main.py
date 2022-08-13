@@ -32,7 +32,7 @@ from kivy.properties import ObjectProperty
 from threading import Thread
 
 Makeblock_connection = BluetoothConnection()
-
+slam_mode = None
 
 def start_coroutine(routine):
     loop = asyncio.new_event_loop()
@@ -98,15 +98,18 @@ class Mapping(Widget):
             self.ids.disconnect_bluetooth.disabled = True
 
     def set_slam_mode(self, mode):
+        """
+        Sets the SLAM mode to use for the calculations.
+
+        :param mode: name of the SLAM mode to be used
+        """
+        global slam_mode
         if mode == 'ekf':
-            # TODO: change mode variable, disable other button
-            pass
+            slam_mode = 'ekf'
         elif mode == 'graph':
-            # TODO: change mode variable, disable other button
-            pass
+            slam_mode = 'graph'
         else:
-            # TODO: throw error
-            pass
+            slam_mode = None
 
     def draw_data(self, dt):
         #print("Bin in draw!")
@@ -127,12 +130,25 @@ class Mapping(Widget):
             #    self.rect = Rectangle(pos=(Map.coordinates_wall[i][0], Map.coordinates_wall[i][1]), size=(2,2))
 
     def create_csv_file(self):
+        """
+        Creates a .csv file named "ScanDaten.csv" in the project directory,
+        where all sensor data send so far by the robot is saved.
+        """
         print("erstelle Datei")
-        f = open("ScanDaten", "w")
+        f = open("ScanDaten.csv", "w")
         for line in Roommap.data_all:
-            print(line, file=f)
+            if len(line) < 77:
+                line_as_str = ""
+            else:
+                line_as_str = str(line)
+                line_as_str = line_as_str.replace(",", ";")
+                line_as_str = line_as_str.replace("[", "")
+                line_as_str = line_as_str.replace("]", "")
+                print(line_as_str, file=f)
+        print("\n", file=f)
         f.close()
         return 0
+
 
 class MappingApp(App):
     def build(self):
