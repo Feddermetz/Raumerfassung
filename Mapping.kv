@@ -90,10 +90,16 @@
             id: EKF_mode
             pos: 1130, 300
             text: "EKF-SLAM"
-            #on_press: root.set_slam_mode('ekf')
+            on_press: root.set_slam_mode('ekf')
 
         Button:
             id: Graph_mode
             pos: 1130, 350
             text: "Graph-SLAM"
-            #on_press: root.set_slam_mode('graph')
+            on_press: root.set_slam_mode('graph')
+
+        Button:
+            id: import_csv
+            pos: 1130, 400
+            text: ".csv importieren"
+            on_press: root.import_csv_file()

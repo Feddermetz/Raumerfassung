@@ -149,6 +149,22 @@ class Mapping(Widget):
         f.close()
         return 0
 
+    def import_csv_file(self):
+        """
+        Imports a .csv file named "ScanDaten.csv" from the project directory. The data
+        is then saved to Roommap.data_all in the same form as the data that is received through
+        the bluetooth connection.
+        """
+        f = open("Testaufnahme_eigenes_Zimmer.csv")
+        for line in f:
+            row_as_int = []
+            row = line.split(sep=";")
+            for data in row:
+                row_as_int.append(int(data))
+            Roommap.data_all.append(row_as_int)
+        f.close()
+        print("Daten momentan: ", Roommap.data_all)
+
 
 class MappingApp(App):
     def build(self):

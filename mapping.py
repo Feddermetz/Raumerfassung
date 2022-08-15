@@ -28,6 +28,7 @@ class Map:
         self.data_now = self.convert_byte_to_float()
         print('Länge des empfangenen Pakets: ', len(self.data_now))
         print('Inhalt des empfangenen Pakets: ', self.data_now)
+        print("Inhalt data_all: ", self.data_all)
         self.data_as_bytes.clear()
 
     def convert_byte_to_float(self):
