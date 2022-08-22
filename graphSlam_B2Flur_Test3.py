@@ -55,7 +55,7 @@ def DoTheThing():
                  ])
     #print('RFID',RFID)
     
-    RFID = np.array([(landmark[0], landmark[1],0) for landmark in robot.allCylinders])
+    RFID = np.array([(landmark[0], landmark[1],0) for landmark in robot.allLandmarks])
     print('RFID',RFID)
     
     # JZ
@@ -73,6 +73,7 @@ def DoTheThing():
                        [robot.motor_pose_data[j][1]],
                        [robot.motor_pose_data[j][2]]
                        ])
+    
     xTrue[2] = np.deg2rad(angle)
     xDR[2] = np.deg2rad(angle)
     
@@ -276,7 +277,7 @@ j = 0
 edgeData = []
 poseData = [(0,0,0,0)]
 for l in f: #Simuliert die eingehenden Bluetoothdaten 
-    if j < 5:
+    if j < 33:
         print('*Datensatz: ', j+1, ' ********************************************************')
         sp = l.split(sep = ";")
         robot.SplitDataStep5(sp)
@@ -285,7 +286,7 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
         robot.PlotMotorPoseData()
         #robot.PlotScanDataPoints('no400')
         robot.CreateDerivativesStep(j)
-        robot.CreateCylinderDataStep(j)
+        robot.CreateLandmarksDataStep(j)
         #robot.PlotCylInGlobalCoordinates()
         #show()
         #robot.PlotScanDerCyl(j)
@@ -296,10 +297,10 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
         py = np.array([])
         cx = np.array([])
         cy = np.array([])
-        mode = 'association'
+        mode = 'uss'
         if j != 0:
             if mode == 'pose':
-                tupel = dmRobot1.sensor_pose_data[j-1]
+                tupel = robot.sensor_pose_data[j-1]
                 px = np.append(px, tupel[0])
                 py = np.append(py, tupel[1])
                 previous_points = np.vstack((px, py))
@@ -311,13 +312,13 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
                 cy = np.append(cy,tupel[1])
                 current_points = np.vstack((cx, cy))
             elif mode == 'uss':
-                for tupel in dmRobot1.scanDataPoints[j-1]:
+                for tupel in robot.scanDataPoints[j-1]:
                 # previous points
                     px = np.append(px, tupel[0])
                     py = np.append(py,tupel[1])
                 previous_points = np.vstack((px, py))
                 #print(previous_points)
-                for tupel in dmRobot1.scanDataPoints[j]:
+                for tupel in robot.scanDataPoints[j]:
                 # previous points
                     cx = np.append(cx, tupel[0])
                     cy = np.append(cy,tupel[1])
@@ -352,6 +353,6 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
         #######################################################################
         
 # Hier bauen wir den Ganzen kram ein aus dem Beispiel, als Routine verpackt
-        DoTheThing()
+        #DoTheThing()
         j += 1
 f.close()

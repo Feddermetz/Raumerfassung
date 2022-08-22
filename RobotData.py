@@ -27,3 +27,6 @@ speed60rpm = 115.42 # Geschwindigkeit in cm/s bei 60rpm Motordrehzahl, bzw Diast
 
 ignoreValue = 400
 
+landmarkMargin = 1000
+minObservations = 2
+

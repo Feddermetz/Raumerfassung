@@ -7,8 +7,7 @@ GraphSlam-Umsetzung mit Testdaten: "Testlauf_Etage2_GebB_30072022.csv"
 @author: Jan
 """
 
-
-from pylab import *
+from pylab import show
 from  DataManager import DataManager
 import poseCalculations as pc
 import RobotData as rd
@@ -18,14 +17,16 @@ import numpy as np
 from iterative_closest_point import *
 robot = DataManager()
 
+
 nsim = 3
 f = open("Testlauf_Etage2_GebB_30072022.csv")
 
 j = 0
+
 edgeData = []
 poseData = [(0,0,0,0)]
 for l in f: #Simuliert die eingehenden Bluetoothdaten 
-    if j < 90:
+    if j > 99:
         print('*Datensatz: ', j+1, ' ********************************************************')
         
         sp = l.split(sep = ";")
@@ -42,14 +43,14 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
         #robot.PlotScanDataPoints('no400')
         robot.CreateDerivativesStep(j)
         #print('Derivatives: ',dmRobot1.derivatives[j])
-        robot.CreateCylinderDataStep(j)
-        robot.PlotCylInGlobalCoordinates()
+        robot.CreateLandmarksDataStep(j)
+        robot.PlotLmInGlobalCoordinates()
         show()
-        if len(robot.landmarkPairs[j]) > 1:
-            print('Landmarkpairs:' ,robot.landmarkPairs[j])
+        #if len(robot.landmarkPairs[j]) > 1:
+        #print('Landmarkpairs:' ,robot.landmarkPairs[j])
         #robot.PlotScanDerCyl(j)
         #show()
-        
+        #print('Valid LM: ' , validLandmarks)
         previousPoints= np.array([])
         currentPoints= np.array([])
         j += 1
@@ -68,7 +69,11 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
 #j += 1
 f.close()
 #print('Objects: ',robot.cylindersInGlobalCoordinates)
-
+validLandmarks = robot.GetValidLandmarks(rd.minObservations)
+robot.PlotValidLmInGC()
+show()
+print('Landmarken gesamt: ', len(robot.allLandmarks))
+print('Valid LM: ' , validLandmarks)
 '''
 g = load_g2o_se2_JZ(poseData,edgeData)
 g.plot()

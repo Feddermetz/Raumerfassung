@@ -80,7 +80,7 @@ def CalcDerivative(dataV, dataH, minDist):
     return derivatives_v, derivatives_h
     #return 0
 
-def FindCylinders(scan, derivative, jump, minDist):
+def FindObjects(scan, derivative, jump, minDist):
     cylList = []
     onCyl = False
     sumRay, sumDepth, rays = 0.0, 0.0, 0
@@ -143,12 +143,14 @@ class DataManager(object):
         self.scanData_h = [] #Scandaten hinterer Sensor (wird später benötigt für Objektextrahierung)
         self.scanDataPoints = [] #Datenpunkte zu jedem Messwert einer Messung im globalen koordinatensystem (x,y)
         self.scanDataPointsNo400 = [] #Datenpunkte ohne 400cm
+        self.allPointNo400=[]
         self.landmarksFromScanData = []
         #self.cylindersFromScanData = []
         #self.cylindersInGlobalCoordinates = []
         self.allLandmarks = [] # List oif Landmarks with ID, xCoord, yCoord
         self.landmarkPairs = [] # Welche
         self.landmarksInGC = []
+        self.validLandmarks = []
         self.derivatives = []
         self.derivatives_v = []
         self.derivatives_h = []
@@ -225,6 +227,8 @@ class DataManager(object):
         #self.scanData.append(scanDataTuples)
         self.uss_Data.append(temp_ussData)
         
+
+        
         if len(self.scanData) == 1:
             sortedList = [(value[0],index)for index,value in enumerate(temp_ussData)]
             sortedList.sort()
@@ -233,7 +237,11 @@ class DataManager(object):
         # Motordaten extrahieren
         temp_motorData = self.CheckCorrectMotorData(int(newData[73]),float(newData[74]),float(newData[75]),float(newData[76]))
         self.motor_positions += {temp_motorData}
-
+    def CreateRobotData(self, index):
+        self.CreatePoseDataStep(index)
+        self.CreateUssDataPosesStep(index)
+        self.CreateDerivativesStep(index)
+        self.CreateLandmarksDataStep(index)
     def CheckCorrectMotorData(self, angle, rotMRight, rotMLeft, duration):
         # check and correct invalid motordata (revs != 0 must be corrected)
         # correction if value 0 occurs
@@ -304,9 +312,7 @@ class DataManager(object):
         for line in self.scanData:
             self.derivatives.append(CalcDerivative(line, rd.minValidSensorData))
     
-
-    
-    def CreateCylinderDataStep(self, index):
+    def CreateLandmarksDataStep(self, index):
         '''
         06.08.2022 - Anpassungen an Unterscheidung zwischen vorderem und hinterem Sensor um fehlerhafte Landmarken zu vermeiden
         13.08.2022 - hinzufügen von checkroutine für landmarkenzuweisung
@@ -314,21 +320,38 @@ class DataManager(object):
         lineV = self.scanData_v[index]
         lineH = self.scanData_h[index]
         objectList = []
-        objectList.append(FindCylinders(lineV, self.derivatives_v[index], 50, rd.minValidSensorData))
-        objectList.append(FindCylinders(lineH, self.derivatives_h[index], 50, rd.minValidSensorData))
+        objectList.append(FindObjects(lineV, self.derivatives_v[index], 50, rd.minValidSensorData))
+        objectList.append(FindObjects(lineH, self.derivatives_h[index], 50, rd.minValidSensorData))
         allObjects = []
         for line in objectList:
             for valuePair in line:
                 allObjects.append(valuePair)
         self.landmarksFromScanData.append(allObjects)
-        self.CalcCylinderInGlobalStep(index)
+        self.CalcLandmarksInGlobalStep(index)
         self.landmarkPairs.append(self.CheckForNearbyLandmarks(index))
+    
+    def GetValidLandmarks(self, minObservations):
+        '''
+        Create and return a list of all landmarks, wich were seen more than once. These should be "valid"
+        '''
+        validLandmarks = []
+        for landmark in self.allLandmarks:
+            counter = 0
+            for line in self.landmarkPairs:
+                for tupel in line: 
+                    #print(tupel)
+                    if tupel[1] == landmark[0]:
+                        counter +=1
+            if counter >= minObservations:
+                validLandmarks.append((landmark))
+            self.validLandmarks.append((validLandmarks))
+        return validLandmarks
         
     def CheckForNearbyLandmarks(self, index):
         '''
         Check which known landmarks were found in latest scan and create dataset
         '''
-        maxDistanceToNext = 700 
+        maxDistanceToNext = rd.landmarkMargin 
         foundPairs = []
         for scanLandmark in self.landmarksInGC[index]:
             for gLandmark in self.allLandmarks: 
@@ -336,39 +359,39 @@ class DataManager(object):
                     foundPairs.append((scanLandmark[0],gLandmark[0]))
         return foundPairs
         
-    def CreateCylinderData(self):
+    def CreateLandmarkData(self):
         for index,line in enumerate(self.scanData):
-            self.landmarksFromScanData.append(FindCylinders(line, self.derivatives[index], 50, rd.minValidSensorData))
+            self.landmarksFromScanData.append(FindObjects(line, self.derivatives[index], 50, rd.minValidSensorData))
         for line in self.landmarksFromScanData:
-            self.CalcCylinderInGlobal()
+            self.CalcLandmarksInGlobal()
     
-    def CalcCylinderInGlobalStep(self, index): #Berechne Cylinderlage ausgehend von zugehöriger Sensorpose
+    def CalcLandmarksInGlobalStep(self, index): #Berechne Cylinderlage ausgehend von zugehöriger Sensorpose
         '''
         13.08.2022: Hinzugefügt: Datensatz pro Scan mit Zuweisungen welche Landmarke gesehen wurde
         '''
-        cylinderLine = []
+        landmarkLine = []
         pose = self.sensor_pose_data[index]
-        for count, cylinder in enumerate(self.landmarksFromScanData[index]):
+        for count, landmark in enumerate(self.landmarksFromScanData[index]):
             #print("Cylinder: ", cylinder)
             #print(cylinder)
-            globalPoint = pc.CalcPoint(pose, cylinder)
+            globalPoint = pc.CalcPoint(pose, landmark)
             #print("Cylinder in global CS: " , globalPoint)
-            cylinderLine += {(count+1, globalPoint[0], globalPoint[1])}
+            landmarkLine += {(count+1, globalPoint[0], globalPoint[1])}
             lmID = len(self.allLandmarks)+1
             self.allLandmarks.append((lmID, globalPoint[0], globalPoint[1]))
-        self.landmarksInGC.append(cylinderLine)
+        self.landmarksInGC.append(landmarkLine)
 
     
-    def CalcCylinderInGlobal(self): #Berechne Cylinderlage ausgehend von zugehöriger Sensorpose
-        cylinderLine = []
+    def CalcLandmarksInGlobal(self): #Berechne Cylinderlage ausgehend von zugehöriger Sensorpose
+        landmarkLine = []
         for index, pose in enumerate(self.sensor_pose_data):
-            for cylinder in self.landmarksFromScanData[index]:
+            for landmark in self.landmarksFromScanData[index]:
                 #print("Cylinder: ", cylinder)
                 #print(cylinder)
-                globalPoint = pc.CalcPoint(pose, cylinder)
+                globalPoint = pc.CalcPoint(pose, landmark)
                 #print("Cylinder in global CS: " , globalPoint)
-                cylinderLine += {globalPoint}
-            self.landmarksInGC.append(cylinderLine)
+                landmarkLine += {globalPoint}
+            self.landmarksInGC.append(landmarkLine)
     
     def PlotData(self):
         mdataleft = []
@@ -480,34 +503,37 @@ class DataManager(object):
     def PlotScanDataPoints(self, mode):
         if mode == 'all':
             for line in self.scanDataPoints:
-                for pair in line:
-                    plot([x[0] for x in line],[x[1] for x in line], 'go')
+                #for pair in line:
+                    plot([x[0] for x in line],[x[1] for x in line], 'g.')
         elif mode =='no400':
             for line in self.scanDataPointsNo400:
-                for pair in line:
-                    plot([x[0] for x in line],[x[1] for x in line], 'go')
+                #for pair in line:
+                    plot([x[0] for x in line],[x[1] for x in line], 'g.')
                     
     def PlotScanData(self, index):
         PlotValues(self.scanData, index, 'or')
     def PlotDerivative(self, index):
         PlotValues(self.derivatives,index, 'bo' )
         
-    def PlotCylinders(self, index):
+    def PlotLandmarks(self, index):
         #for data in self.cylindersFromScanData:
          #   scatter([c[0] for c in data],[c[1] for c in data],c = 'g', s=200)
-        PlotValues(self.cylindersFromScanData,index, 'go')
-    def PlotCylInGlobalCoordinates(self):
-        for cyl in self.landmarksInGC:
-            plot([x[1] for x in cyl],[x[2] for x in cyl], 'r^')
+        PlotValues(self.landmarksFromScanData,index, 'go')
+    def PlotLmInGlobalCoordinates(self):
+        for lm in self.landmarksInGC:
+            plot([x[1] for x in lm],[x[2] for x in lm], 'r^')
+    def PlotValidLmInGC(self):
+        for lm in self.validLandmarks:
+            plot([x[1] for x in lm],[x[2] for x in lm], 'bo')
     def PlotAllCylinders(self):
         for cyl in self.allCylinders:
             plot(cyl[0],cyl[1], 'r^')
-    def PlotScanDerCyl(self, index):
+    def PlotScanDerLM(self, index):
         self.PlotScanData(index)
         #show()
         self.PlotDerivative(index)
         #show()
-        self.PlotCylinders(index)
+        self.PlotLandmarks(index)
         show()
                 
     def PlotRobotDataPolar(self):
@@ -546,6 +572,8 @@ class DataManager(object):
         #print(pUssPoints)
         data = []
         counter = 0
+        previous_points = np.array([])
+        current_points = np.array([])
         for i, tupel in enumerate(pUssData): # (winkel, gemessene distanz)
             if tupel[1] != 4000: # Grenzbereich wird nicht berücksichtigt (für später: vielleicht doch, falls BEIDE werte 400)
                 #Wir berechenn die Beobachtungswinkeldifferenz zwischen den beiden Messungen
@@ -570,8 +598,9 @@ class DataManager(object):
                 plt.plot(x3,y3, 'bo')
                 show()
                 '''
-                if degrees(angleInNext) > 360:
-                    angleInNext -= radians(360)
+                
+                #if degrees(angleInNext) > 360:
+                    #angleInNext -= radians(360)
                 #print('Wert in nächstem Datensatz bei: ' , degrees(angleInNext))
                 
                 if CheckValidAngle(degrees(angleInNext)): 
@@ -596,4 +625,6 @@ class DataManager(object):
                         previous_points = np.vstack((px, py))
                         current_points = np.vstack((cx, cy))
                         #print(current_points)
+        print('pc len: ', len(previous_points))
+        print('cc len: ', len(current_points))
         return previous_points, current_points
