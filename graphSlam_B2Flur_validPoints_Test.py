@@ -25,7 +25,7 @@ from  DataManager import DataManager, EuclideanDistance
 import poseCalculations as pc
 import RobotData as rd
 import matplotlib.pyplot as plt
-from graphslam.load import load_g2o_se2_JZ
+#from graphslam.load import load_g2o_se2_JZ
 from iterative_closest_point import *
 
 #  Simulation parameter
@@ -503,7 +503,7 @@ def main_jz():
             
             print(LINE)
             
-            doGraphSLAM = False
+            doGraphSLAM = True
             if doGraphSLAM:
                 xTrue, z, xDR, ud = observation(xTrue, xDR, u, RFID)
     

@@ -12,7 +12,7 @@ from  DataManager import DataManager
 import poseCalculations as pc
 import RobotData as rd
 import matplotlib.pyplot as plt
-from graphslam.load import load_g2o_se2_JZ
+#from graphslam.load import load_g2o_se2_JZ
 import numpy as np
 from iterative_closest_point import *
 robot = DataManager()
@@ -26,7 +26,7 @@ j = 0
 edgeData = []
 poseData = [(0,0,0,0)]
 for l in f: #Simuliert die eingehenden Bluetoothdaten 
-    if j > 99:
+    if j < 99:
         print('*Datensatz: ', j+1, ' ********************************************************')
         
         sp = l.split(sep = ";")
@@ -53,20 +53,19 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
         #print('Valid LM: ' , validLandmarks)
         previousPoints= np.array([])
         currentPoints= np.array([])
-        j += 1
-'''
+        
+
     if j >0:
         previousPoints, currentPoints = robot.PrepareICP(j)
         print('anzahl PP: ',len(previousPoints[0]))
         print('anzahl CP: ',len(currentPoints[0]))
-        #print(robot.indexOfAngle)
         #ICP###################################################################
         for _ in range(nsim):
             R, T = icp_matching(previousPoints, currentPoints)
             print("R:", R)
             print("T:", T)
-'''
-#j += 1
+
+    j += 1
 f.close()
 #print('Objects: ',robot.cylindersInGlobalCoordinates)
 validLandmarks = robot.GetValidLandmarks(rd.minObservations)
