@@ -369,6 +369,8 @@ def main_jz():
     init = False
     time = 0.0
     newUssData = []
+    
+    ###########################################################################
     for l in f: #Simuliert die eingehenden Bluetoothdaten 
         if j < 90:
             print('*Datensatz: ', j+1, ' ******************************************************************************************************')
@@ -378,11 +380,8 @@ def main_jz():
             #robot.PlotSensorPoseData()
             #robot.PlotScanDataPoints('no400')
 
-            '''
-            Idee: Wir entfernen alle Punkte aus den UssDaten, die in einer Messung vorher, oder danach nicht nochmal im Umkreis von 100 mm gefunden wurden
-            '''
-                #print(len(validPoints))
-                #print('newUss:', validPoints)
+            #print(len(validPoints))
+            #print('newUss:', validPoints)
             
             
             #plt.title(j+1)
@@ -397,6 +396,10 @@ def main_jz():
             
         j += 1
     f.close()
+    ###########################################################################
+    '''
+    Idee: Wir entfernen alle Punkte aus den UssDaten, die in einer Messung vorher, oder danach nicht nochmal im Umkreis von 100 mm gefunden wurden
+    '''
     sets = len(robot.scanDataPointsNo400)
     for j in range(sets):
         validPoints = []            
