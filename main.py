@@ -9,6 +9,7 @@ Config.set('graphics', 'resizable', False)
 import logging
 import kivy
 import asyncio
+import numpy as np
 import bleak
 import platform
 import sys
@@ -17,8 +18,10 @@ from bluetooth_communication import eventloop
 from bluetooth_communication import BluetoothConnection
 from mapping import Roommap
 from kivy.app import App
+from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.graphics import Rectangle, Color
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.widget import Widget
@@ -30,9 +33,13 @@ from bleak import BleakScanner, BleakClient
 from bleak.exc import BleakError
 from kivy.properties import ObjectProperty
 from threading import Thread
+from EKF_SLAM import run_ekf_slam
+from no_correction_SLAM import run_no_correction_slam
+from matplotlib import pyplot as plt
 
 Makeblock_connection = BluetoothConnection()
-slam_mode = None
+slam_mode = 'None'
+
 
 def start_coroutine(routine):
     loop = asyncio.new_event_loop()
@@ -41,6 +48,11 @@ def start_coroutine(routine):
 
 
 class Mapping(Widget):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        map = self.ids.map
+        map.add_widget(FigureCanvasKivyAgg(plt.gcf()))
 
     def turn_left_45(self):
         print("Drehe 45 Grad links!")
@@ -85,7 +97,7 @@ class Mapping(Widget):
     def manage_bluetooth_connection(self, is_connection_wanted):
         Makeblock_connection.is_connection_wanted = is_connection_wanted
         start_coroutine(Makeblock_connection.manage_bluetooth_connection())
-        Clock.schedule_interval(self.draw_data, 5.0)
+        Clock.schedule_interval(self.draw_data, 2.0)
 
     def show_connection_status(self, dt):
         if Makeblock_connection.connection_status:
@@ -99,35 +111,45 @@ class Mapping(Widget):
 
     def set_slam_mode(self, mode):
         """
-        Sets the SLAM mode to use for the calculations.
+        Sets the SLAM mode to use for the calculations. Disables the buttons for setting the slam mode.
 
         :param mode: name of the SLAM mode to be used
         """
         global slam_mode
         if mode == 'ekf':
             slam_mode = 'ekf'
+            self.ids.EKF_mode.disabled = True
+            self.ids.graph_mode.disabled = False
+            self.ids.no_correction_mode.disabled = False
         elif mode == 'graph':
             slam_mode = 'graph'
+            self.ids.EKF_mode.disabled = False
+            self.ids.graph_mode.disabled = True
+            self.ids.no_correction_mode.disabled = False
+        elif mode == 'noCorrection':
+            slam_mode = 'noCorrection'
+            self.ids.EKF_mode.disabled = False
+            self.ids.graph_mode.disabled = False
+            self.ids.no_correction_mode.disabled = True
         else:
-            slam_mode = None
+            slam_mode = 'None'
+            self.ids.EKF_mode.disabled = False
+            self.ids.graph_mode.disabled = False
+            self.ids.no_correction_mode.disabled = False
 
     def draw_data(self, dt):
-        #print("Bin in draw!")
-        coordinates = Roommap.get_wall_coordinates()
-        with self.canvas:
-            #print("Bin in canvas")
-            Color(1,1,1)
-            #print("Länge der Koordinaten:", len(coordinates))
-            if len(coordinates) > 0:
-                #print("coordinates-Variable:", coordinates[0][1])
-                #print("Länge", len(coordinates))
-                for i in range(12):
-            #    print("Eingegebene Koordinaten: ", coordinates[i][0], coordinates[i][1])
-                    Rectangle(pos=(coordinates[i][0], coordinates[i][1]), size=(2,2))
-            #for i in range(len(Map.get_coordinates_wall())):
-            #    print("Bin in draw_data!")
-            #    Color(0.5,0.5,0.5,0.5)
-            #    self.rect = Rectangle(pos=(Map.coordinates_wall[i][0], Map.coordinates_wall[i][1]), size=(2,2))
+        global slam_mode
+        if slam_mode == 'ekf':
+            plot = run_ekf_slam()
+            self.ids.map.add_widget(FigureCanvasKivyAgg(plot.gcf()))
+        elif slam_mode == 'graph':
+            # TODO: call graph slam method
+            pass
+        elif slam_mode == 'noCorrection':
+            plot = run_no_correction_slam()
+            self.ids.map.add_widget(FigureCanvasKivyAgg(plot.gcf()))
+        else:
+            pass
 
     def create_csv_file(self):
         """
@@ -155,7 +177,7 @@ class Mapping(Widget):
         is then saved to Roommap.data_all in the same form as the data that is received through
         the bluetooth connection.
         """
-        f = open("Testaufnahme_eigenes_Zimmer.csv")
+        f = open("ScanDaten.csv")
         for line in f:
             row_as_int = []
             row = line.split(sep=";")
@@ -168,10 +190,12 @@ class Mapping(Widget):
 
 class MappingApp(App):
     def build(self):
+        Builder.load_file("Mapping.kv")
         return Mapping()
 
     def on_start(self):
         Clock.schedule_interval(self.root.show_connection_status, 2.0)
+        Clock.schedule_interval(self.root.draw_data, 2.0)
 
 
 if __name__ == '__main__':
