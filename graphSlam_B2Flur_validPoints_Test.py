@@ -42,7 +42,7 @@ C_SIGMA1 = 0.1
 C_SIGMA2 = 0.1
 C_SIGMA3 = np.deg2rad(1.0)
 
-MAX_ITR = 20  # Maximum iteration
+MAX_ITR = 30  # Maximum iteration
 
 show_graph_d_time = 1.0  # [s]
 show_animation = True
@@ -437,123 +437,124 @@ def main_jz():
     # Start SLAM implementation
     for j,line in enumerate(robot.all_Data):
     #ICP###################################################################
-            lmMode = 'validPoints'
-            
-            if lmMode == 'prepareICP':
-                previous_points = np.array([])
-                current_points = np.array([])
-                if j > 0:
-                    previous_points, current_points = robot.PrepareICP(j)
-                    
-                if len(current_points) != 0:
-                    print('anzahl PP: ',len(previous_points[0]))
-                    print('pp', previous_points)
-                    print('anzahl CP: ',len(current_points[0]))
-                    print('cc', current_points)
-                    RFID = np.array([(point[0], point[1],0) for point in current_points])
-                    
-                else:
-                    validLandmarks = robot.GetValidLandmarks(2)
-                    RFID = np.array([(landmark[1], landmark[2],0) for landmark in validLandmarks])
-            elif lmMode == 'allPoints':
-                allPoints = []
-                for line in robot.scanDataPointsNo400:
-                    for tupel in line:
-                        allPoints += {tupel}
-                RFID = np.array([(landmark[0], landmark[1],0) for landmark in allPoints])
-            elif lmMode == 'aktLandmarks':
-                RFID = np.array([(landmark[0], landmark[1]) for landmark in robot.landmarksInGC[j]])
-            elif lmMode == 'ICP':
-                return 0
-            elif lmMode == 'validLm1':
-                validLandmarks = robot.GetValidLandmarks(1)
-                RFID = np.array([(landmark[1], landmark[2],0, landmark[0]) for landmark in validLandmarks])
-            elif lmMode == 'validPoints':
-                validPoints = []
-                for line in newUssData: 
-                    for point in line:
-                        validPoints += {point}
-                RFID = np.array([(point[0], point[1],0) for point in validPoints])
-            
-            
-            xDR = np.array([[robot.sensor_pose_data[j][0]],
-                               [robot.sensor_pose_data[j][1]],
-                               [robot.sensor_pose_data[j][2]]
-                               ])
-            #print('xDR: ', xDR)
-            print('RFID ', len(RFID))
-            if not init:
-                hxTrue = xTrue
-                hxDR = xTrue
-                init = True
-            else:
-                hxDR = np.hstack((hxDR, xDR))
-                hxTrue = np.hstack((hxTrue, xTrue))
-            time += DT
-            d_time += DT
-            #u = calc_input()  #brauchen wir nicht stattdessen:
-                    
-            if j == 0:
-                u = np.array([[0,0]]).T
-            else:
-                d = EuclideanDistance(robot.sensor_pose_data[j-1][0],
-                                      robot.sensor_pose_data[j-1][1],
-                                      robot.sensor_pose_data[j][0],
-                                      robot.sensor_pose_data[j][1] )
-
-                diffTheta = robot.sensor_pose_data[j][2]-robot.sensor_pose_data[j-1][2]
-                u = np.array([[d,diffTheta]]).T
-            
-            print(LINE)
-            
-            doGraphSLAM = True
-            if doGraphSLAM:
-                xTrue, z, xDR, ud = observation(xTrue, xDR, u, RFID)
-    
-                hz.append(z)
-                
-                if j == len(robot.all_Data)-1:
-                
-                    x_opt = graph_based_slam(hxDR, hz)
-                #print(LINE)
-                
-                #print('x_opt: ', x_opt)
-                    d_time = 0.0
+        lmMode = 'prepareICP'
         
-                    if show_animation:  # pragma: no cover
-                        plt.cla()
-                        # for stopping simulation with the esc key.
-                        plt.gcf().canvas.mpl_connect(
-                            'key_release_event',
-                            lambda event: [exit(0) if event.key == 'escape' else None])
-                        #plt.plot(RFID[:, 0], RFID[:, 1], ".k")
-                        plt.plot(hxTrue[0, :].flatten(),
-                                 hxTrue[1, :].flatten(), "-b")
-                        plt.plot(hxDR[0, :].flatten(),
-                                 hxDR[1, :].flatten(), "-k")
-                        plt.plot(x_opt[0, :].flatten(),
-                                 x_opt[1, :].flatten(), "-r")
-                        plt.axis("equal")
-                        plt.grid(True)
-                        plt.title("Measurement: " + str(j+1)[0:5])
-                        plt.pause(1.0)
-                        if (j+1 == 85):
-                            plt.cla()
-                            # for stopping simulation with the esc key.
-                            plt.gcf().canvas.mpl_connect(
-                                'key_release_event',
-                                lambda event: [exit(0) if event.key == 'escape' else None])
-                            plt.plot(RFID[:, 0], RFID[:, 1], ".k")
-                            plt.plot(hxTrue[0, :].flatten(),
-                                     hxTrue[1, :].flatten(), "-b")
-                            plt.plot(hxDR[0, :].flatten(),
-                                     hxDR[1, :].flatten(), "-k")
-                            plt.plot(x_opt[0, :].flatten(),
-                                     x_opt[1, :].flatten(), "-r")
-                            plt.axis("equal")
-                            plt.grid(True)
-                            plt.title("Measurement: " + str(j+1)[0:5])
-                            plt.pause(1.0)
+        if lmMode == 'prepareICP':
+            previous_points = np.array([])
+            current_points = np.array([])
+            if j > 0:
+                previous_points, current_points = robot.PrepareICP(j)
+                
+            if len(current_points) != 0:
+                print('anzahl PP: ',len(previous_points[0]))
+                print('pp', previous_points)
+                print('anzahl CP: ',len(current_points[0]))
+                print('cc', current_points)
+                RFID = np.array([(point[0], point[1],0) for point in current_points])
+                
+            else:
+                validLandmarks = robot.GetValidLandmarks(2)
+                RFID = np.array([(landmark[1], landmark[2],0) for landmark in validLandmarks])
+            print('RFID:', RFID)
+        elif lmMode == 'allPoints':
+            allPoints = []
+            for line in robot.scanDataPointsNo400:
+                for tupel in line:
+                    allPoints += {tupel}
+            RFID = np.array([(landmark[0], landmark[1],0) for landmark in allPoints])
+        elif lmMode == 'aktLandmarks':
+            RFID = np.array([(landmark[0], landmark[1]) for landmark in robot.landmarksInGC[j]])
+        elif lmMode == 'ICP':
+            return 0
+        elif lmMode == 'validLm1':
+            validLandmarks = robot.GetValidLandmarks(1)
+            RFID = np.array([(landmark[1], landmark[2],0, landmark[0]) for landmark in validLandmarks])
+        elif lmMode == 'validPoints':
+            validPoints = []
+            for line in newUssData: 
+                for point in line:
+                    validPoints += {point}
+            RFID = np.array([(point[0], point[1],0) for point in validPoints])
+        
+        
+        xDR = np.array([[robot.sensor_pose_data[j][0]],
+                           [robot.sensor_pose_data[j][1]],
+                           [robot.sensor_pose_data[j][2]]
+                           ])
+        #print('xDR: ', xDR)
+        print('RFID ', len(RFID))
+        if not init:
+            hxTrue = xTrue
+            hxDR = xTrue
+            init = True
+        else:
+            hxDR = np.hstack((hxDR, xDR))
+            hxTrue = np.hstack((hxTrue, xTrue))
+        time += DT
+        d_time += DT
+        #u = calc_input()  #brauchen wir nicht stattdessen:
+                
+        if j == 0:
+            u = np.array([[0,0]]).T
+        else:
+            d = EuclideanDistance(robot.sensor_pose_data[j-1][0],
+                                  robot.sensor_pose_data[j-1][1],
+                                  robot.sensor_pose_data[j][0],
+                                  robot.sensor_pose_data[j][1] )
+
+            diffTheta = robot.sensor_pose_data[j][2]-robot.sensor_pose_data[j-1][2]
+            u = np.array([[d,diffTheta]]).T
+        
+        print(LINE)
+        
+        doGraphSLAM = True
+        if doGraphSLAM:
+            xTrue, z, xDR, ud = observation(xTrue, xDR, u, RFID)
+
+            hz.append(z)
+            
+            #if j == len(robot.all_Data)-1:
+            
+            x_opt = graph_based_slam(hxDR, hz)
+        #print(LINE)
+        
+        #print('x_opt: ', x_opt)
+            d_time = 0.0
+
+            if show_animation:  # pragma: no cover
+                plt.cla()
+                # for stopping simulation with the esc key.
+                plt.gcf().canvas.mpl_connect(
+                    'key_release_event',
+                    lambda event: [exit(0) if event.key == 'escape' else None])
+                #plt.plot(RFID[:, 0], RFID[:, 1], ".k")
+                plt.plot(hxTrue[0, :].flatten(),
+                         hxTrue[1, :].flatten(), "-b")
+                plt.plot(hxDR[0, :].flatten(),
+                         hxDR[1, :].flatten(), "-k")
+                plt.plot(x_opt[0, :].flatten(),
+                         x_opt[1, :].flatten(), "-r")
+                plt.axis("equal")
+                plt.grid(True)
+                plt.title("Measurement: " + str(j+1)[0:5])
+                plt.pause(1.0)
+                if (j+1 == 85):
+                    plt.cla()
+                    # for stopping simulation with the esc key.
+                    plt.gcf().canvas.mpl_connect(
+                        'key_release_event',
+                        lambda event: [exit(0) if event.key == 'escape' else None])
+                    plt.plot(RFID[:, 0], RFID[:, 1], ".k")
+                    plt.plot(hxTrue[0, :].flatten(),
+                             hxTrue[1, :].flatten(), "-b")
+                    plt.plot(hxDR[0, :].flatten(),
+                             hxDR[1, :].flatten(), "-k")
+                    plt.plot(x_opt[0, :].flatten(),
+                             x_opt[1, :].flatten(), "-r")
+                    plt.axis("equal")
+                    plt.grid(True)
+                    plt.title("Measurement: " + str(j+1)[0:5])
+                    plt.pause(1.0)
     
     return 0
 

@@ -1,4 +1,25 @@
+# @author: Robin Justinger
+
 <Mapping>:
+
+# separating line
+    canvas:
+        Color:
+            rgba: 0.5, 0.5, 0.5, 1
+        Rectangle:
+            id: test
+            pos: 1125, 0
+            size: 5, 720
+
+
+# map drawing area
+    FloatLayout:
+        id: map
+        size: 1125, 720
+        pos: 0, 0
+
+
+# buttons for the robot control
     FloatLayout:
         pos: 1130, 0
         size: 50, 50
@@ -64,16 +85,48 @@
             background_down: 'images/arrow_right_135_pressed.png'
             on_press: root.turn_right_135()
 
+
+# buttons for bluetooth, csv files and choosing SLAM algorithm
     FloatLayout:
         size: 150, 50
         Button:
             id: connect_bluetooth
-            pos: 1130, 200
+            pos: 1130, 273
             text: "Bluetooth verbinden"
             on_press: root.manage_bluetooth_connection(True)
 
         Button:
             id: disconnect_bluetooth
-            pos: 1130, 150
+            pos: 1130, 223
             text: "Bluetooth trennen"
-            on_press: root.create_data_file()
+            on_press: root.manage_bluetooth_connection(False)
+
+        Button:
+            id: EKF_mode
+            pos: 1130, 396
+            text: "EKF-SLAM"
+            on_press: root.set_slam_mode('ekf')
+
+        Button:
+            id: graph_mode
+            pos: 1130, 446
+            text: "Graph-SLAM"
+            on_press: root.set_slam_mode('graph')
+
+        Button:
+            id: no_correction_mode
+            pos: 1130, 496
+            text: "SLAM ohne Korrektur"
+            on_press: root.set_slam_mode('noCorrection')
+
+        Button:
+            id: create_csv
+            pos: 1130, 620
+            text: ".csv erstellen"
+            on_press: root.create_csv_file()
+
+        Button:
+            id: import_csv
+            pos: 1130, 670
+            text: ".csv importieren"
+            on_press: root.import_csv_file()
