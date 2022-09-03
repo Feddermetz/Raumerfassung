@@ -24,10 +24,8 @@ from scipy.spatial.transform import Rotation as Rot
 
 from pylab import show
 from  DataManager import DataManager, EuclideanDistance
-import poseCalculations as pc
-import RobotData as rd
 import matplotlib.pyplot as plt
-from graphslam.load import load_g2o_se2_JZ
+#from graphslam.load import load_g2o_se2_JZ
 from iterative_closest_point import *
 from raw_data import Roommap
 
