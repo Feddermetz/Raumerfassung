@@ -1,6 +1,6 @@
-'''
+"""
 @author: Robin Justinger
-'''
+"""
 
 import asyncio
 from bleak import BleakScanner, BleakClient
@@ -74,7 +74,7 @@ def eventloop(function):
 
 def update_all():
     """
-    saves the new data when all data of the most recent scan has been reveived
+    saves the new data when all data of the most recent scan has been received
     """
     if Roommap.data_as_bytes.endswith(b'\n\n'):
         Roommap.save_data_now()

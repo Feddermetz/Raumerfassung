@@ -4,9 +4,9 @@ notebook author: Andrew Tu (drewtu2)
 modified by: Robin Justinger
 """
 
-import math
-import numpy as np
-import matplotlib.pyplot as plt
+#import math
+#import numpy as np
+#import matplotlib.pyplot as plt
 from DataManager import DataManager
 from raw_data import Roommap
 from pylab import *
@@ -343,8 +343,8 @@ def run_ekf_slam():
         # plot landmark
         for i in range(calc_n_LM(xEst)):
             plt.plot(xEst[STATE_SIZE + i * 2],
-                    xEst[STATE_SIZE + i * 2 + 1], "xg")
-
+                    xEst[STATE_SIZE + i * 2 + 1], ".k")
+        #plt.plot(RFID[:, 0], RFID[:, 1], "*k")
         plt.plot(hxTrue[0, :],
                 hxTrue[1, :], "-b")
         plt.plot(hxDR[0, :],
@@ -353,83 +353,5 @@ def run_ekf_slam():
                 hxEst[1, :], "-r")
         plt.axis("equal")
         plt.grid(True)
+        plt.title("Ergebnis mit EKF-SLAM")
     return plt
-
-
-
-
-
-
-"""
-    # Landmark positions
-    # RFID positions [x, y]
-    RFID = np.array([[0.0, 0.0]])
-                     #[15.0, 10.0]])
-                     #[3.0, 15.0],
-                     #[-5.0, 20.0]])
-
-    # State Vector [x y yaw v]'
-    xEst = np.zeros((STATE_SIZE, 1))
-    xTrue = np.zeros((STATE_SIZE, 1))
-    PEst = np.eye(STATE_SIZE)
-
-    xDR = np.zeros((STATE_SIZE, 1))  # Dead reckoning
-
-    # history
-    hxEst = xEst
-    hxTrue = xTrue
-    hxDR = xTrue
-
-    z = dmRobot1.uss_Data
-
-    #for i in range(46):
-    while SIM_TIME >= time:
-        time += dmRobot1.all_Data[][76]
-        #print("davor")
-        #print(dmRobot1.all_Data)
-        u = calc_input(dmRobot1.motor_pose_data[csv_line_counter], dmRobot1.all_Data[csv_line_counter][76], dmRobot1.all_Data[csv_line_counter][73])
-        #print("u: ", u)
-
-        #xTrue, z, xDR, ud = observation(xTrue, xDR, u, RFID)
-        #if dmRobot1.uss_Data == dmRobot1.scanData:
-            #print("uss_Data und scanData sind gleich!")
-
-        #print("Struktur von z: ", z)
-        #print(len(z))
-        xEst, PEst = ekf_slam(xEst, PEst, u, z[i])
-
-        x_state = xEst[0:STATE_SIZE]
-
-        # store data history
-        hxEst = np.hstack((hxEst, x_state))
-        hxDR = np.hstack((hxDR, xDR))
-        hxTrue = np.hstack((hxTrue, xTrue))
-
-        if show_animation:  # pragma: no cover
-            plt.cla()
-
-            plt.plot(RFID[:, 0], RFID[:, 1], "*k")
-            plt.plot(xEst[0], xEst[1], ".r")
-
-            # plot landmark
-            for i in range(calc_n_LM(xEst)):
-                plt.plot(xEst[STATE_SIZE + i * 2],
-                         xEst[STATE_SIZE + i * 2 + 1], "xg")
-
-            plt.plot(hxTrue[0, :],
-                     hxTrue[1, :], "-b")
-            plt.plot(hxDR[0, :],
-                     hxDR[1, :], "-k")
-            plt.plot(hxEst[0, :],
-                     hxEst[1, :], "-r")
-            plt.axis("equal")
-            plt.grid(True)
-            plt.pause(0.001)
-
-#print("Inhalt von dmRobot1.all_Data: ", dmRobot1.all_Data)
-#print("Inhalt von dmRobot1.motor_pose_data: ", dmRobot1.motor_pose_data)
-
-
-#for csv_line_counter in range(j):
-#run_ekf_slam()
-"""

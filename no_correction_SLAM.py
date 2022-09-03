@@ -22,8 +22,10 @@ def run_no_correction_slam():
         motor_pose_y.append(dmRobot1.motor_pose_data[j][1])
         uss_data = dmRobot1.scanDataPointsNo400[j]
         for element in uss_data:
-            plt.plot(element[0], element[1], 'bo', zorder=1)
+            plt.plot(element[0], element[1], '.k', zorder=1)
         j += 1
-    plt.plot(motor_pose_x, motor_pose_y, 'ro', zorder=2, linestyle='solid')
+    plt.plot(motor_pose_x, motor_pose_y, '-r', zorder=2, linestyle='solid')
+    plt.axis("equal")
     plt.grid(True)
+    plt.title("Messdaten ohne Korrektur")
     return plt

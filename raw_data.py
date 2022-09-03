@@ -1,27 +1,21 @@
-from math import sin, cos, radians
+"""
+@author: Robin Justinger
+"""
 
 
 class RawData:
 
     def __init__(self):
-        self.map = [[False]*1000 for i in range(1000)]
         self.data_now = []
         self.data_old = []
         self.data_all = []
         self.data_as_bytes = bytearray()
-        self.robot_angle = 0
-        self.robot_position_x = 500
-        self.robot_position_y = 500
-        self.map_to_draw = False
-        self.coordinates = []
-        self.wall_coordinates = []
-
-    def get_wall_coordinates(self):
-        return self.wall_coordinates
 
     def save_data_now(self):
         """
-        Saves the new incoming data as integers
+        Saves the new incoming data as integers and clears the
+        bytebuffer "data_as_bytes", so that it is ready to save
+        data again.
         """
         self.data_old = self.data_now
         self.data_all.append(self.data_old)
@@ -30,20 +24,21 @@ class RawData:
 
     def convert_byte_to_int(self):
         """
-        Converts the bytes incoming from bluetooth to integers
+        Converts the bytes that came in from bluetooth to integers and
+        puts the integers into a list.
         """
-        bytebuffer = bytearray()
-        intbuffer = []
+        byte_buffer = bytearray()
+        int_buffer = []
         j = 0  # Simple counter to go through the bytearray
         for i in range(77):
             # != 10 because 10 is newline in ASCII-Code and the values are separated by a newline
             while self.data_as_bytes[j] != 10:
-                bytebuffer.append(self.data_as_bytes[j])
+                byte_buffer.append(self.data_as_bytes[j])
                 j = j + 1
-            intbuffer.append(int(bytebuffer))
+            int_buffer.append(int(byte_buffer))
             j = j + 1
-            bytebuffer.clear()
-        return intbuffer
+            byte_buffer.clear()
+        return int_buffer
 
 
 Roommap = RawData()

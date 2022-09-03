@@ -16,10 +16,13 @@ from kivy.uix.widget import Widget
 from kivy.clock import Clock
 from threading import Thread
 from EKF_SLAM import run_ekf_slam
+from DataManager import DataManager
+from graph_based_slam import RunGraphBasedSLAM
 from no_correction_SLAM import run_no_correction_slam
 from matplotlib import pyplot as plt
 
 Makeblock_connection = BluetoothConnection()
+dmRobot1 = DataManager()
 
 
 def start_coroutine(routine):
@@ -139,8 +142,8 @@ class Mapping(Widget):
             plot = run_ekf_slam()
             self.ids.map.add_widget(FigureCanvasKivyAgg(plot.gcf()))
         elif self.slam_mode == 'graph':
-            # TODO: call graph slam method
-            pass
+            plot = RunGraphBasedSLAM('validLM')
+            self.ids.map.add_widget(FigureCanvasKivyAgg(plot.gcf()))
         elif self.slam_mode == 'noCorrection':
             plot = run_no_correction_slam()
             self.ids.map.add_widget(FigureCanvasKivyAgg(plot.gcf()))

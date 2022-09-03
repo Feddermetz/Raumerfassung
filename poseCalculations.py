@@ -8,7 +8,7 @@ from pylab import *
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import scipy.interpolate as si
+#import scipy.interpolate as si
 
 from math import sin, cos, tan, pi, radians, degrees
 import RobotData as rd
