@@ -20,6 +20,7 @@ from scipy.spatial.transform import Rotation as Rot
 
 from pylab import show
 from DataManager import DataManager, EuclideanDistance
+from raw_data import dmRobot1
 import matplotlib.pyplot as plt
 # from graphslam.load import load_g2o_se2_JZ
 from iterative_closest_point import *
@@ -484,7 +485,7 @@ def RunGraphBasedSLAM(lmMode):
         return
     '''
     ##############################################################################################################
-    robot = DataManager()
+    robot = dmRobot1
     nsim = 3
     j = 0
     edgeData = []

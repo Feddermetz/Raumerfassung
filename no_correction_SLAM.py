@@ -1,8 +1,5 @@
-from DataManager import DataManager
-from raw_data import Roommap
+from raw_data import Roommap, dmRobot1
 import matplotlib.pyplot as plt
-
-dmRobot1 = DataManager()
 
 
 def run_no_correction_slam():
@@ -24,7 +21,7 @@ def run_no_correction_slam():
         for element in uss_data:
             plt.plot(element[0], element[1], '.k', zorder=1)
         j += 1
-    plt.plot(motor_pose_x, motor_pose_y, '-r', zorder=2, linestyle='solid')
+    plt.plot(motor_pose_x, motor_pose_y, '-r', zorder=2)
     plt.axis("equal")
     plt.grid(True)
     plt.title("Messdaten ohne Korrektur")

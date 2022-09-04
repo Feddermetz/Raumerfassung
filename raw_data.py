@@ -1,6 +1,7 @@
 """
 @author: Robin Justinger
 """
+from DataManager import DataManager
 
 
 class RawData:
@@ -19,6 +20,8 @@ class RawData:
         """
         self.data_old = self.data_now
         self.data_all.append(self.data_old)
+        if self.data_all[0] == [] and len(self.data_all) > 1:
+            self.data_all.pop(0)
         self.data_now = self.convert_byte_to_int()
         self.data_as_bytes.clear()
 
@@ -42,3 +45,4 @@ class RawData:
 
 
 Roommap = RawData()
+dmRobot1 = DataManager()

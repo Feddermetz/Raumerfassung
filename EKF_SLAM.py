@@ -4,14 +4,9 @@ notebook author: Andrew Tu (drewtu2)
 modified by: Robin Justinger
 """
 
-#import math
-#import numpy as np
-#import matplotlib.pyplot as plt
-from DataManager import DataManager
-from raw_data import Roommap
+from raw_data import Roommap, dmRobot1
 from pylab import *
 
-dmRobot1 = DataManager()
 # EKF state covariance
 Cx = np.diag([0.5, 0.5, np.deg2rad(30.0)])**2 # Change in covariance
 

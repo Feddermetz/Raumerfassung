@@ -16,13 +16,11 @@ from kivy.uix.widget import Widget
 from kivy.clock import Clock
 from threading import Thread
 from EKF_SLAM import run_ekf_slam
-from DataManager import DataManager
 from graph_based_slam import RunGraphBasedSLAM
 from no_correction_SLAM import run_no_correction_slam
 from matplotlib import pyplot as plt
 
 Makeblock_connection = BluetoothConnection()
-dmRobot1 = DataManager()
 
 
 def start_coroutine(routine):
@@ -102,6 +100,17 @@ class Mapping(Widget):
             self.ids.connect_bluetooth.disabled = False
             self.ids.disconnect_bluetooth.disabled = True
 
+    def disable_import_csv(self, dt):
+        """
+        Disables the button for csv imports while a robot is connected via bluetooth.
+
+        param dt: needed for recurring execution of the function
+        """
+        if Makeblock_connection.connection_status:
+            self.ids.import_csv.disabled = True
+        else:
+            self.ids.import_csv.disabled = False
+
     def set_slam_mode(self, mode):
         """
         Sets the SLAM mode to use for the calculations. Disables the buttons for setting the slam mode.
@@ -136,7 +145,7 @@ class Mapping(Widget):
 
         param dt: needed for recurring execution of the function
         """
-        if Roommap.data_all == self.data_all_old and self.slam_mode == self.slam_mode_old:
+        if (Roommap.data_all == self.data_all_old and self.slam_mode == self.slam_mode_old) or len(Roommap.data_all) < 2:
             return
         if self.slam_mode == 'ekf':
             plot = run_ekf_slam()
@@ -147,9 +156,7 @@ class Mapping(Widget):
         elif self.slam_mode == 'noCorrection':
             plot = run_no_correction_slam()
             self.ids.map.add_widget(FigureCanvasKivyAgg(plot.gcf()))
-        else:
-            pass
-        self.data_all_old = Roommap.data_all
+        self.data_all_old = Roommap.data_all[:]
         self.slam_mode_old = self.slam_mode
 
     def create_csv_file(self):
@@ -201,6 +208,7 @@ class MappingApp(App):
         """
         Clock.schedule_interval(self.root.show_connection_status, 2.0)
         Clock.schedule_interval(self.root.draw_data, 2.0)
+        Clock.schedule_interval(self.root.disable_import_csv, 2.0)
 
 
 if __name__ == '__main__':
