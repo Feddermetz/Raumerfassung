@@ -24,7 +24,6 @@ from scipy.spatial.transform import Rotation as Rot
 
 from pylab import show
 from  DataManager import DataManager, EuclideanDistance
-import matplotlib.pyplot as plt
 #from graphslam.load import load_g2o_se2_JZ
 from iterative_closest_point import *
 from raw_data import Roommap
@@ -180,10 +179,6 @@ def graph_based_slam(x_init, hz):
     x_opt = copy.deepcopy(x_init)
     nt = x_opt.shape[1]
     n = nt * STATE_SIZE
-    
-    #print("JZ3: ")
-    #print(x_opt)
-    #print(z_list)
     
     for itr in range(MAX_ITR):
         
@@ -379,10 +374,11 @@ def main_jz(lmMode):
             sp = l.split(sep = ";")
             robot.SplitDataStep5(sp)
             robot.CreateRobotData(j)
-            robot.PlotSensorPoseData()
-            robot.PlotScanDataPoints('no400')
-            plt.title(j+1)
-            show()
+            #robot.PlotSensorPoseData()
+            #robot.PlotScanDataPoints('no400')
+            #plt.title(j+1)
+            #show()
+            
             # Start SLAM implementation
             
             #ICP###################################################################
@@ -401,7 +397,7 @@ def main_jz(lmMode):
                     RFID = np.array([(point[0], point[1],0) for point in current_points])
                     
                 else:
-                    validLandmarks = robot.GetValidLandmarks(2)
+                    validLandmarks = robot.GetValidLandmarks(1)
                     RFID = np.array([(landmark[1], landmark[2],0) for landmark in validLandmarks])
             elif lmMode == 'allPoints':
                 allPoints = []
@@ -449,7 +445,7 @@ def main_jz(lmMode):
             
             print(LINE)
             
-            doIt = False
+            doIt = True
             if doIt:
                 xTrue, z, xDR, ud = observation(xTrue, xDR, u, RFID)
     
@@ -483,11 +479,6 @@ def main_jz(lmMode):
     return 0
 
 def RunGraphBasedSLAM(lmMode):
-    '''
-    global raw_data_old
-    if raw_data_old == Roommap.data_all:
-        return
-    '''
     ##############################################################################################################
     robot = DataManager()
     nsim = 3
@@ -507,7 +498,7 @@ def RunGraphBasedSLAM(lmMode):
     time = 0.0
     
     print("länge: ", len(Roommap.data_all))
-    for l in Roommap.data_all:
+    for index, l in enumerate(Roommap.data_all):
         print("Datensatz: ",j , "Inhalt:", l)
         robot.SplitDataStep5(l)
         robot.CreateRobotData(j)
@@ -529,7 +520,7 @@ def RunGraphBasedSLAM(lmMode):
                 RFID = np.array([(point[0], point[1],0) for point in current_points])
                
             else:
-                validLandmarks = robot.GetValidLandmarks(2)
+                validLandmarks = robot.GetValidLandmarks(1)
                 RFID = np.array([(landmark[1], landmark[2],0) for landmark in validLandmarks])
         elif lmMode == 'allPoints':
             allPoints = []
@@ -668,4 +659,6 @@ def main():
                 
 if __name__ == '__main__':
     #main()
-    main_jz('validLm1')
+    #main_jz('validLm1')
+    main_jz('prepareICP')
+    

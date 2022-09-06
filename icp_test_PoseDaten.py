@@ -5,11 +5,9 @@ Created on Wed Jul 20 16:26:16 2022
 
 @author: janzimon
 
-
 Test ICP Algorithmus mit Pose-Daten
 
 """
-
 
 from pylab import *
 from  DataManager import DataManager
@@ -18,8 +16,6 @@ import RobotData as rd
 from iterative_closest_point import *
 
 robot1 = DataManager()
-
-
 nsim = 3
 
   # number of simulation
@@ -39,7 +35,6 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
         robot1.CreateUssDataPosesStep(j)
         robot1.PlotMotorPoseData()
         robot1.PlotSensorPoseData()
-        #print('PoseData: ', robot1.sensor_pose_data)
         px = np.array([])
         py = np.array([])
         cx = np.array([])
