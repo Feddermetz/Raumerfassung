@@ -4,14 +4,11 @@ Created on Tue May 31 14:06:44 2022
 @author: Jan
 """
 
-# Globale Daten zu Roboter
-
 WidthMm = 202
 LenghtMm = 205
 
 WheelBaseMm = 181
 WheelCircumferenceMm = 68.5
-distance360Degrees = 10.0 # Umrechnungsfaktor, da 360° nicht einer realen Umdreheung des Rads entspricht
 
 sensorOffset = 64
 sensorPivotOffset = 50
