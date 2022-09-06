@@ -44,15 +44,15 @@ class Mapping(Widget):
         map.add_widget(FigureCanvasKivyAgg(plt.gcf()))
 
     def turn_left_45(self):
-        Makeblock_connection.direction = b'1'
+        Makeblock_connection.direction = b'7'
         Makeblock_connection.send_request = True
 
     def drive_forward(self):
-        Makeblock_connection.direction = b'2'
+        Makeblock_connection.direction = b'8'
         Makeblock_connection.send_request = True
 
     def turn_right_45(self):
-        Makeblock_connection.direction = b'3'
+        Makeblock_connection.direction = b'9'
         Makeblock_connection.send_request = True
 
     def turn_left_90(self):
@@ -64,15 +64,15 @@ class Mapping(Widget):
         Makeblock_connection.send_request = True
 
     def turn_left_135(self):
-        Makeblock_connection.direction = b'7'
+        Makeblock_connection.direction = b'1'
         Makeblock_connection.send_request = True
 
     def drive_backward(self):
-        Makeblock_connection.direction = b'8'
+        Makeblock_connection.direction = b'2'
         Makeblock_connection.send_request = True
 
     def turn_right_135(self):
-        Makeblock_connection.direction = b'9'
+        Makeblock_connection.direction = b'3'
         Makeblock_connection.send_request = True
 
     def manage_bluetooth_connection(self, is_connection_wanted):
