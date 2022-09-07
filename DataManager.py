@@ -13,6 +13,7 @@ from pylab import *
 import numpy as np
 import matplotlib.pyplot as plt
 import poseCalculations as pc
+from math import degrees, pi, radians
 import math
 import RobotData as rd
 
@@ -78,7 +79,7 @@ def CalcDerivative(dataV, dataH, minDist):
     
     return derivatives_v, derivatives_h
 
-def FindObjects(scan, derivative, jump, minDist):
+def FindObjects(scan, derivative, jump):
     objList = []
     onObj = False
     sumRay, sumDepth, rays = 0.0, 0.0, 0
@@ -111,7 +112,7 @@ class DataManager(object):
     def __init__(self):
         self.all_Data = [] # Alle Daten
         self.uss_Data = []
-        self.motor_positions = []
+        self.motor_positions = [] 
         self.test_data = []
         self.motor_pose_data = []
         self.sensor_pose_data = []
@@ -125,7 +126,7 @@ class DataManager(object):
         self.allPointNo400=[]
         self.landmarksFromScanData = []
         self.allLandmarks = [] # List of Landmarks with ID, xCoord, yCoord
-        self.landmarkPairs = [] # Welche
+        self.landmarkPairs = [] # Contains related Landmarks. If a landmark is within a range of another landmark, we get a tupel with (current Landmark ID, global Landmark ID)
         self.landmarksInGC = []
         self.validLandmarks = []
         self.derivatives = []
@@ -269,14 +270,14 @@ class DataManager(object):
         lineV = self.scanData_v[index]
         lineH = self.scanData_h[index]
         objectList = []
-        objectList.append(FindObjects(lineV, self.derivatives_v[index], gJump, rd.minValidSensorData))
-        objectList.append(FindObjects(lineH, self.derivatives_h[index], gJump, rd.minValidSensorData))
+        objectList.append(FindObjects(lineV, self.derivatives_v[index], gJump))
+        objectList.append(FindObjects(lineH, self.derivatives_h[index], gJump))
         allObjects = []
         for line in objectList:
             for valuePair in line:
                 allObjects.append(valuePair)
         self.landmarksFromScanData.append(allObjects)
-        self.CalcLandmarksInGlobalStep(index)
+        self.CalcLandmarksInGlobalCoordinates(index)
         self.landmarkPairs.append(self.CheckForNearbyLandmarks(index))
     
     def GetValidLandmarks(self, minObservations):
@@ -310,11 +311,11 @@ class DataManager(object):
         
     def CreateLandmarkData(self):
         for index,line in enumerate(self.scanData):
-            self.landmarksFromScanData.append(FindObjects(line, self.derivatives[index], gJump, rd.minValidSensorData))
+            self.landmarksFromScanData.append(FindObjects(line, self.derivatives[index], gJump))
         for line in self.landmarksFromScanData:
             self.CalcLandmarksInGlobal()
     
-    def CalcLandmarksInGlobalStep(self, index):
+    def CalcLandmarksInGlobalCoordinates(self, index):
         '''
         Calculates the Landmarkposition in global coordinates based on the sensor pose
         
@@ -345,7 +346,7 @@ class DataManager(object):
             mdataleft += {(data[0],data[1])}
             mdataright += {(data[0],data[2])}
         for tupel in mdataleft:
-            plot([x[0] for x in mdataleft],[x[1] for x in mdataleft], 'bo')
+            plt.plot([x[0] for x in mdataleft],[x[1] for x in mdataleft], 'bo')
         show()
 
     def PrintData(self):
@@ -408,19 +409,19 @@ class DataManager(object):
 
     def PlotMotorPoseData(self):
         for pose in self.motor_pose_data:
-            plot([x[0] for x in self.motor_pose_data],[x[1] for x in self.motor_pose_data], 'bo',)
+            plt.plot([x[0] for x in self.motor_pose_data],[x[1] for x in self.motor_pose_data], 'bo',)
             
     def PlotSensorPoseData(self):
         for pose in self.sensor_pose_data:
-            plot([x[0] for x in self.sensor_pose_data],[x[1] for x in self.sensor_pose_data], 'ro')
+            plt.plot([x[0] for x in self.sensor_pose_data],[x[1] for x in self.sensor_pose_data], 'ro')
             
     def PlotScanDataPoints(self, mode):
         if mode == 'all':
             for line in self.scanDataPoints:
-                plot([x[0] for x in line],[x[1] for x in line], 'g.')
+               plt.plot([x[0] for x in line],[x[1] for x in line], 'g.')
         elif mode =='no400':
             for line in self.scanDataPointsNo400:
-                plot([x[0] for x in line],[x[1] for x in line], 'g.')
+                plt.plot([x[0] for x in line],[x[1] for x in line], 'g.')
                     
     def PlotScanData(self, index):
         PlotValues(self.scanData, index, '.r')
@@ -429,19 +430,19 @@ class DataManager(object):
         
     def PlotLandmarks(self, index):
         print(self.landmarksFromScanData[index])
-        plot([x[0] for x in self.landmarksFromScanData[index]],[x[1] for x in self.landmarksFromScanData[index]], 'go') 
+        plt.plot([x[0] for x in self.landmarksFromScanData[index]],[x[1] for x in self.landmarksFromScanData[index]], 'go') 
         
     def PlotLmInGlobalCoordinates(self):
         for lm in self.landmarksInGC:
-            plot([x[1] for x in lm],[x[2] for x in lm], 'r^')
+            plt.plot([x[1] for x in lm],[x[2] for x in lm], 'r^')
             
     def PlotValidLmInGC(self):
         for lm in self.validLandmarks:
-            plot([x[1] for x in lm],[x[2] for x in lm], 'bo')
+            plt.plot([x[1] for x in lm],[x[2] for x in lm], 'bo')
             
     def PlotAllLandmarks(self):
         for cyl in self.allLandmarks:
-            plot(cyl[0],cyl[1], 'r^')
+            plt.plot(cyl[0],cyl[1], 'r^')
             
     def PlotScanDerLM(self, index):
         self.PlotScanData(index)
@@ -466,10 +467,6 @@ class DataManager(object):
         cUssData = self.uss_Data[index]
         pUssPoints = self.scanDataPoints[index-1]
         cUssPoints = self.scanDataPoints[index-1]
-        #print('ppose: ', pPose)
-        #print(pUssPoints)
-        data = []
-        counter = 0
         previous_points = np.array([])
         current_points = np.array([])
         for i, tupel in enumerate(pUssData): # (winkel, gemessene distanz)
@@ -480,13 +477,10 @@ class DataManager(object):
                 x1, y1 = pPose[0] , pPose[1]
                 x3, y3 = pUssPoints[i][0], pUssPoints[i][1]
                 x2, y2 = cPose[0], cPose[1]
-                #print('Tupel: ', tupel)
-                #print('P1: (',x1,y1,')', 'P2: (',x2,y2,')', 'P3: (',x3,y3,')', )
                 
                 pAlpha = math.asin((y2-y1)/(((x2-x1)**2+(y2-y1)**2)**(1/2)))
                 cAlpha = cPose[2] + math.asin((y3-y2)/(((x3-x2)**2+(y3-y2)**2)**(1/2)))
                 
-                #print('Alpha1:',degrees(pAlpha),'Alpha2:',degrees(cAlpha), 'Winkel zwischen Geraden: ', degrees(pAlpha-cAlpha) )
                 angleInNext = cHeading + radians(tupel[0])-cAlpha
                 
                 '''
@@ -496,11 +490,7 @@ class DataManager(object):
                 plt.plot(x3,y3, 'bo')
                 show()
                 '''
-                
-                #if degrees(angleInNext) > 360:
-                    #angleInNext -= radians(360)
-                #print('Wert in nächstem Datensatz bei: ' , degrees(angleInNext))
-                
+
                 if CheckValidAngle(degrees(angleInNext)): 
                     # Es gibt einen Wert in der nächsten Messung, der auch in der vorherigen Messung gemessen wurde
                     nextIndex = GetIndexFromAngle(self.indexOfAngle[0], degrees(angleInNext))
