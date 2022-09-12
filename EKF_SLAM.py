@@ -10,13 +10,8 @@ from pylab import *
 # EKF state covariance
 Cx = np.diag([0.5, 0.5, np.deg2rad(30.0)])**2 # Change in covariance
 
-#  Simulation parameter
-Qsim = np.diag([0.2, np.deg2rad(1.0)])**2  # Sensor Noise
-Rsim = np.diag([1.0, np.deg2rad(10.0)])**2 # Process Noise
-
-DT = 0.0  # time tick [s]
 MAX_RANGE = 4000.0  # maximum observation range
-M_DIST_TH = 100.0  # Threshold of Mahalanobis distance for data association.
+M_DIST_TH = 50.0  # Threshold of Mahalanobis distance for data association.
 STATE_SIZE = 3  # State size [x,y,yaw]
 LM_SIZE = 2  # LM state size [x,y]
 j = 0
@@ -75,9 +70,9 @@ def motion_model(x, u):
                   [0, 1.0, 0],
                   [0, 0, 1.0]])
 
-    B = np.array([[DT * math.cos(x[2, 0]), 0],
-                  [DT * math.sin(x[2, 0]), 0],
-                  [0.0, DT]])
+    B = np.array([[math.cos(x[2, 0]), 0],
+                  [math.sin(x[2, 0]), 0],
+                  [0.0, 1.0]])
 
     x = (F @ x) + (B @ u)
     return x
@@ -104,7 +99,7 @@ def update(xEst, PEst, u, z, initP):
         nLM = calc_n_LM(xEst) # number of landmarks we currently know about
 
         if minid == nLM: # Landmark is a NEW landmark
-            #print("New LM")
+
             # Extend state and covariance matrix
             xAug = np.vstack((xEst, calc_LM_Pos(xEst, z[iz, :])))
             PAug = np.vstack((np.hstack((PEst, np.zeros((len(xEst), LM_SIZE)))),
@@ -200,8 +195,8 @@ def jacob_motion(x, u):
     Fx = np.hstack((np.eye(STATE_SIZE), np.zeros(
         (STATE_SIZE, LM_SIZE * calc_n_LM(x)))))
 
-    jF = np.array([[0.0, 0.0, -DT * u[0] * math.sin(x[2, 0])],
-                   [0.0, 0.0, DT * u[0] * math.cos(x[2, 0])],
+    jF = np.array([[0.0, 0.0, u[0] * math.sin(x[2, 0])],
+                   [0.0, 0.0, u[0] * math.cos(x[2, 0])],
                    [0.0, 0.0, 0.0]],dtype=object)
 
     G = np.eye(STATE_SIZE) + Fx.T @ jF @ Fx
@@ -271,7 +266,7 @@ def search_correspond_LM_ID(xAug, PAug, zi):
     return minid
 
 
-def calc_input(motor_data, drive_time, angle):
+def calc_input(motor_data, motor_angle):
     """
     Calculates the speed and angle of the robot dependent on the motor data calculated in DataManager
 
@@ -284,9 +279,9 @@ def calc_input(motor_data, drive_time, angle):
         pose_old = [0, 0]
     else:
         pose_old = [motor_data[-2][0], motor_data[-2][1]]
-    v = math.sqrt((abs(pose_now[0] - pose_old[0]))**2 + (abs(pose_now[1] - pose_old[1]))**2) / float(drive_time)  # [mm/ms]
-    yawrate = radians(float(angle)) / float(drive_time)  # [rad/ms]
-    u = np.array([[v, yawrate]]).T
+    r = math.sqrt((abs(pose_now[0] - pose_old[0]))**2 + (abs(pose_now[1] - pose_old[1]))**2)  # [mm/ms]
+    angle = radians(motor_angle)
+    u = np.array([[r, angle]]).T
     return u
 
 
@@ -310,19 +305,31 @@ def run_ekf_slam():
     hxTrue = xTrue
     hxDR = xTrue
 
-    z = dmRobot1.scanDataPointsNo400
-
     if raw_data_old == Roommap.data_all:
         return
-    for index in range(len(dmRobot1.all_Data)):
-        SIM_TIME += dmRobot1.all_Data[index][76]
+    #for index in range(len(dmRobot1.all_Data)):
+    #    SIM_TIME += dmRobot1.all_Data[index][76]
     for dataset in Roommap.data_all:
-        DT = Roommap.data_all[j][76]
+    #    DT = Roommap.data_all[j][76]
+
         dmRobot1.SplitDataStep5(dataset)
         dmRobot1.CreatePoseDataStep(j)
         dmRobot1.CreateUssDataPosesStep(j)
-        u = calc_input(dmRobot1.motor_pose_data, dmRobot1.all_Data[j][76], dmRobot1.all_Data[j][73])
-        xEst, PEst = ekf_slam(xEst, PEst, u, z[j])
+        u = calc_input(dmRobot1.motor_pose_data, dmRobot1.all_Data[j][73])
+        z = []
+        for i in range(len(dmRobot1.scanData[j])):
+            #print("scanData[i]: ", dmRobot1.scanData[i])
+            temp_range = dmRobot1.scanData[j][i][1]
+            #print("temp_range: ", temp_range)
+            temp_angle = radians(dmRobot1.scanData[j][i][0])
+            if temp_range <= 4000:
+                z.append([temp_range, temp_angle])
+        #print("z: ", z)
+        z.pop(0)
+        #print("z: ", z)
+
+
+        xEst, PEst = ekf_slam(xEst, PEst, u, z)
         x_state = xEst[0:STATE_SIZE]
 
         # store data history
