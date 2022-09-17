@@ -1,3 +1,6 @@
+"""
+@author: Robin Justinger
+"""
 from raw_data import Roommap, dmRobot1
 import matplotlib.pyplot as plt
 

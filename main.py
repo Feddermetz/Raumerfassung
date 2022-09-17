@@ -113,7 +113,8 @@ class Mapping(Widget):
 
     def set_slam_mode(self, mode):
         """
-        Sets the SLAM mode to use for the calculations. Disables the buttons for setting the slam mode.
+        Sets the SLAM mode to use for the calculations. Disables the button for setting
+        the current slam mode.
 
         :param mode: name of the SLAM mode to be used
         """
