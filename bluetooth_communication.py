@@ -1,7 +1,6 @@
 """
 @author: Robin Justinger
 """
-
 import asyncio
 from bleak import BleakScanner, BleakClient
 from raw_data import Roommap
