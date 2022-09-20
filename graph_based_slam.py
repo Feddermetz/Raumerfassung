@@ -26,7 +26,7 @@ from pylab import show
 import RobotData as rd
 from  DataManager import DataManager, EuclideanDistance
 from iterative_closest_point import *
-from raw_data import Roommap
+from raw_data import Roommap, dmRobot1
 
 #  Simulation parameter
 Q_sim = np.diag([0.2, np.deg2rad(.0)]) ** 2
@@ -305,6 +305,7 @@ def observation_jz2(xTrue, xd, u, RFID, lmPairs, obs):
     
     return xTrue, z, xd, ud
 
+"""
 def main():
     robot = DataManager()
     #f = open("Testlauf_Etage2_GebB_30072022.csv")
@@ -502,10 +503,12 @@ def main():
     plt.show()
     f.close()
     return 0
+"""
 
 def RunGraphBasedSLAM(lmMode):
     ##############################################################################################################
     robot = DataManager()
+    #robot = dmRobot1
     # Init Data for Graphslam 
     xTrue = np.zeros((STATE_SIZE, 1))# State Vector [x y yaw v]'
     xDR = np.zeros((STATE_SIZE, 1))  # Dead reckoning
@@ -516,16 +519,17 @@ def RunGraphBasedSLAM(lmMode):
     d_time = 0.0
     init = False
     time = 0.0
-    
+
     for j, l in enumerate(Roommap.data_all):
-        robot.SplitDataStep5(data_all)
+        robot.SplitDataStep5(l)
         robot.CreateRobotData(j)
+
         # Start SLAM implementation
         
         # Landmarkmode is fixed to allLandmarks. Other Landmarkmodes didn't word well but stayed for further testing
         lmMode = 'allLandmarks'
         landmarks = []
-        for z,line in enumerate(robot.all_Data):
+        for z, line in enumerate(robot.all_Data):
             if lmMode == 'FilterSingleObs':
                 previous_points = np.array([])
                 current_points = np.array([])
@@ -641,7 +645,6 @@ def RunGraphBasedSLAM(lmMode):
     plt.axis("equal")
     plt.grid(True)
     plt.title("Graph Based Slam Result")
-    plt.show()
     return plt
 
 if __name__ == '__main__':

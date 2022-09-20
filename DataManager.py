@@ -459,10 +459,10 @@ class DataManager(object):
     def PlotScanDataPoints(self, mode):
         if mode == 'all':
             for line in self.scanDataPoints:
-               plt.plot([x[0] for x in line],[x[1] for x in line], 'g.')
+               plt.plot([x[0] for x in line],[x[1] for x in line], '.k')
         elif mode =='no400':
             for line in self.scanDataPointsNo400:
-                plt.plot([x[0] for x in line],[x[1] for x in line], 'g.')
+                plt.plot([x[0] for x in line],[x[1] for x in line], '.k')
                     
     def PlotScanData(self, index):
         PlotValues(self.scanData, index, '.r')
