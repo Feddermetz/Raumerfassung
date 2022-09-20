@@ -19,6 +19,23 @@ import RobotData as rd
 
 gJump = 30 # value for landmarkextraction: the higher gJump the less landmarks are extracted.
 
+
+def DataSmoothing(data):
+    '''
+    checks for single outliers in ultrasonic measurment and replaces them with mean of previous and next value
+    '''
+    treshhold = 50
+    smoothData = []
+    for index,value in enumerate(data):
+        
+        if (index > 0) and (index < len(data)-1):
+            if ( abs(value[1] - data[index-1][1]) > treshhold ) and ( abs(value[1] - data[index+1][1]) > treshhold):
+                smoothData += ({(data[index][0],((data[index-1][1] + data[index+1][1])/2))})
+            else:
+                smoothData += ({(value[0],value[1])})  
+        else:
+            smoothData += ({(value[0],value[1])})    
+    return smoothData
 def EuclideanDistance(x1, y1, x2, y2):
     return ((x2-x1)**2 + (y2-y1)**2)**(1/2)
 
@@ -188,6 +205,9 @@ class DataManager(object):
                 temp_ussData += tupel
                 temp_ussData_h += tupel
                 j += rd.measurementStep
+        temp_ussData = DataSmoothing(temp_ussData)
+        temp_ussData_v = DataSmoothing(temp_ussData_v)
+        temp_ussData_h = DataSmoothing(temp_ussData_h)
         self.scanData.append(temp_ussData)
         self.scanData_v.append(temp_ussData_v)
         self.scanData_h.append(temp_ussData_h)
@@ -205,6 +225,27 @@ class DataManager(object):
         self.CreateUssDataPosesStep(index)
         self.CreateDerivativesStep(index)
         self.CreateLandmarksDataStep(index)
+    def UpdateDataFromSLAM(self,newPoses):
+        '''
+        takes newPoses (resulting new poses from SLAM-Algorithm) and creates new Instance of DataManager, 
+        where poses and all other Data is updates with respect to new Pposes
+        '''
+        updateRobot = DataManager()
+        newX = newPoses[0]
+        newY = newPoses[1]
+        newTheta = newPoses[2]
+        
+        for index,line in enumerate(self.all_Data):
+            updateRobot.SplitDataStep5(line)
+            pose = (newX[index],newY[index],newTheta[index])
+            updateRobot.motor_pose_data.append(pose)
+            pose_s = rd.CalcSensorPose(pose, updateRobot.motor_positions[index])
+            updateRobot.sensor_pose_data.append(pose_s)        
+            updateRobot.CreateUssDataPosesStep(index)
+            updateRobot.CreateDerivativesStep(index)
+            updateRobot.CreateLandmarksDataStep(index)
+        return updateRobot
+    
     def CheckCorrectMotorData(self, angle, rotMRight, rotMLeft, duration):
         '''
         check and correct invalid motordata (revs != 0 must be corrected)
@@ -238,6 +279,7 @@ class DataManager(object):
                     rotMRight = rotMLeft * (-1) 
                 elif rotMLeft == 0:
                     rotMLeft = rotMRight * (-1)
+        #return((angle, rotMRight, rotMLeft*0.9965, duration))
         return((angle, rotMRight, rotMLeft, duration))
 
     def CreateDerivativesStep(self, index):
@@ -282,14 +324,13 @@ class DataManager(object):
     
     def GetValidLandmarks(self, minObservations):
         '''
-        Create and return a list of all landmarks, wich were seen more than once. These should be "valid"
+        Create and return a list of all landmarks, wich were seen at least minObservations-times. These should be "valid"
         '''
         validLandmarks = []
         for landmark in self.allLandmarks:
             counter = 0
             for line in self.landmarkPairs:
                 for tupel in line: 
-                    #print(tupel)
                     if tupel[1] == landmark[0]:
                         counter +=1
             if counter >= minObservations:
@@ -325,7 +366,7 @@ class DataManager(object):
         landmarkLine = []
         pose = self.sensor_pose_data[index]
         for count, landmark in enumerate(self.landmarksFromScanData[index]):
-            globalPoint = pc.CalcPoint(pose, landmark)
+            globalPoint = rd.CalcPoint(pose, landmark)
             landmarkLine += {(count+1, globalPoint[0], globalPoint[1])}
             lmID = len(self.allLandmarks)+1
             self.allLandmarks.append((lmID, globalPoint[0], globalPoint[1]))
@@ -335,7 +376,7 @@ class DataManager(object):
         landmarkLine = []
         for index, pose in enumerate(self.sensor_pose_data):
             for landmark in self.landmarksFromScanData[index]:
-                globalPoint = pc.CalcPoint(pose, landmark)
+                globalPoint = rd.CalcPoint(pose, landmark)
                 landmarkLine += {globalPoint}
             self.landmarksInGC.append(landmarkLine)
     
@@ -369,9 +410,9 @@ class DataManager(object):
         pose = (0.0,0.0,0.0/180 * pi)
         pose_s = pose
         for mdline in self.motor_positions:
-            pose = pc.CalcPivotPose(pose, mdline)
+            pose = rd.CalcPivotPose(pose, mdline)
             self.motor_pose_data.append(pose)
-            pose_s = pc.CalcSensorPose(pose, mdline)
+            pose_s = rd.CalcSensorPose(pose, mdline)
             self.sensor_pose_data.append(pose_s)
             
     def CreatePoseDataStep(self, counter):
@@ -380,9 +421,9 @@ class DataManager(object):
         else:
             pose = self.motor_pose_data[counter-1]
         pose_s = pose
-        pose = pc.CalcPivotPose(pose, self.motor_positions[counter])
+        pose = rd.CalcPivotPose(pose, self.motor_positions[counter])
         self.motor_pose_data.append(pose)
-        pose_s = pc.CalcSensorPose(pose, self.motor_positions[counter])
+        pose_s = rd.CalcSensorPose(pose, self.motor_positions[counter])
         self.sensor_pose_data.append(pose_s)
         return 0
             
@@ -390,7 +431,7 @@ class DataManager(object):
         for index, pose in enumerate(self.sensor_pose_data):
             scanLinePoints = []
             for tupel in self.scanData[index]:
-                newPoint = pc.CalcPoint(pose, tupel)
+                newPoint = rd.CalcPoint(pose, tupel)
                 scanLinePoints += {newPoint}
             self.scanDataPoints.append(scanLinePoints)
             
@@ -399,7 +440,7 @@ class DataManager(object):
         scanLinePoints = []
         scanLinePointsNo400 = []
         for tupel in self.scanData[count]:
-            newPoint = pc.CalcPoint(pose, tupel)
+            newPoint = rd.CalcPoint(pose, tupel)
             scanLinePoints += {newPoint}
             if tupel[1] < 4000:
                 scanLinePointsNo400 += {newPoint}
@@ -409,11 +450,11 @@ class DataManager(object):
 
     def PlotMotorPoseData(self):
         for pose in self.motor_pose_data:
-            plt.plot([x[0] for x in self.motor_pose_data],[x[1] for x in self.motor_pose_data], 'bo',)
+            plt.plot([x[0] for x in self.motor_pose_data],[x[1] for x in self.motor_pose_data], 'b-',)
             
     def PlotSensorPoseData(self):
         for pose in self.sensor_pose_data:
-            plt.plot([x[0] for x in self.sensor_pose_data],[x[1] for x in self.sensor_pose_data], 'ro')
+            plt.plot([x[0] for x in self.sensor_pose_data],[x[1] for x in self.sensor_pose_data], 'r-')
             
     def PlotScanDataPoints(self, mode):
         if mode == 'all':
@@ -429,7 +470,6 @@ class DataManager(object):
         PlotValues(self.derivatives,index, '.b' )
         
     def PlotLandmarks(self, index):
-        print(self.landmarksFromScanData[index])
         plt.plot([x[0] for x in self.landmarksFromScanData[index]],[x[1] for x in self.landmarksFromScanData[index]], 'go') 
         
     def PlotLmInGlobalCoordinates(self):
@@ -449,12 +489,11 @@ class DataManager(object):
         self.PlotDerivative(index)
         self.PlotLandmarks(index)
                 
-    def PrepareICP(self, index):
+    def FilterSingleObservationPoints(self, index):
         '''
         Idee:   Berechnung des Winkels unter dem ein Messpunkt in der Folgemessung 
-                betrachtet werden müsste.
-                Danach Zuweisung dieser Punkte zueinander, dann ICP oder so, 
-                mal schauen wie sich das dann in einen Vektor für die constraints umrechnen lässt
+                betrachtet werden müsste. danach Zuweisung dieser Punkte zueinander. 
+                Zur Verbesserung der übergebenen Landmarken und der ICP- Ergebnisse
         '''
         px = np.array([])
         py = np.array([])
@@ -470,7 +509,7 @@ class DataManager(object):
         previous_points = np.array([])
         current_points = np.array([])
         for i, tupel in enumerate(pUssData): # (winkel, gemessene distanz)
-            if tupel[1] != 4000: # Grenzbereich wird nicht berücksichtigt (für später: vielleicht doch, falls BEIDE werte 400)
+            if tupel[1] != 4000: # Grenzbereich wird nicht berücksichtigt
                 #Wir berechenn die Beobachtungswinkeldifferenz zwischen den beiden Messungen
                 pHeading = pPose[2]
                 cHeading = cPose[2]
@@ -494,25 +533,20 @@ class DataManager(object):
                 if CheckValidAngle(degrees(angleInNext)): 
                     # Es gibt einen Wert in der nächsten Messung, der auch in der vorherigen Messung gemessen wurde
                     nextIndex = GetIndexFromAngle(self.indexOfAngle[0], degrees(angleInNext))
-                    #print('nextIndex: ' , nextIndex)
                     nextScanData =  cUssData[nextIndex]
                     nextPoint = cUssPoints[nextIndex]
-                    #print('nextUp: ',nextScanData, nextPoint)
                     
                     # fast fertig: nur wenn der korrelierende Messwert kleiner 400 ist, haben wir einen validen Punkt für ICP
                     if nextScanData[1] < 4000:
-                        #print('Supi, wir haben einen Messwert gefunden!')
-                        # previous point
                         px = np.append(px, x3)
                         py = np.append(py, y3)
 
-                        # current points
                         cx = np.append(cx, nextPoint[0])
                         cy = np.append(cy,nextPoint[1])
                         
                         previous_points = np.vstack((px, py))
                         current_points = np.vstack((cx, cy))
-                        #print(current_points)
-        print('pc len: ', len(previous_points))
-        print('cc len: ', len(current_points))
         return previous_points, current_points
+    
+
+    

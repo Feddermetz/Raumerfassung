@@ -31,7 +31,7 @@ def icp_matching(previous_points, current_points):
     dError = np.inf
     preError = np.inf
     count = 0
-
+    
     if show_animation:
         fig = plt.figure()
         if previous_points.shape[0] == 3:
@@ -53,23 +53,26 @@ def icp_matching(previous_points, current_points):
         #print("Residual:", error)
 
         if dError < 0:  # prevent matrix H changing, exit loop
-            print("Not Converge ERROR<0...", preError, dError, count)
+            converge = False
+            #print("Not Converge ERROR<0...", preError, dError, count)
             break
 
         preError = error
         H = update_homogeneous_matrix(H, Rt, Tt)
 
         if dError <= EPS:
-            print("Converge", error, dError, count)
+            converge = True
+            #print("Converge", error, dError, count)
             break
         elif MAX_ITER <= count:
-            print("Not Converge...MAX_ITER<=count", error, dError, count)
+            converge = False
+            #print("Not Converge...MAX_ITER<=count", error, dError, count)
             break
 
     R = np.array(H[0:-1, 0:-1])
     T = np.array(H[0:-1, -1])
 
-    return R, T
+    return converge, error, R, T 
 
 
 def update_homogeneous_matrix(Hin, R, T):
@@ -136,8 +139,22 @@ def plot_points(previous_points, current_points, figure):
         plt.cla()
         plt.plot(previous_points[0, :], previous_points[1, :], ".r")
         plt.plot(current_points[0, :], current_points[1, :], ".b")
-        plt.plot(0.0, 0.0, "xr")
+        #plt.plot(0.0, 0.0, "xr")
         plt.axis("equal")
+        plt.title("ICP" )
+        plt.xlabel("mm", 
+           family='serif', 
+           color='k', 
+           weight='normal', 
+           size = 10,
+           labelpad = 6)
+        plt.ylabel("mm", 
+           family='serif', 
+           color='k', 
+           weight='normal', 
+           size = 10,
+           labelpad = 6)
+        plt.grid()
 
 
 def main():
@@ -164,7 +181,7 @@ def main():
               for (x, y) in zip(px, py)]
         current_points = np.vstack((cx, cy))
 
-        R, T = icp_matching(previous_points, current_points)
+        converge, error, R, T = icp_matching(previous_points, current_points)
         print("R:", R)
         print("T:", T)
 
@@ -202,4 +219,4 @@ def main_3d_points():
 
 if __name__ == '__main__':
     main()
-    main_3d_points()
+    #main_3d_points()

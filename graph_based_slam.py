@@ -23,18 +23,18 @@ import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
 from pylab import show
+import RobotData as rd
 from  DataManager import DataManager, EuclideanDistance
-#from graphslam.load import load_g2o_se2_JZ
 from iterative_closest_point import *
 from raw_data import Roommap
 
 #  Simulation parameter
-Q_sim = np.diag([0.2, np.deg2rad(1.0)]) ** 2
+Q_sim = np.diag([0.2, np.deg2rad(.0)]) ** 2
 R_sim = np.diag([0.1, np.deg2rad(10.0)]) ** 2
 
 DT = 1.0  # time tick [s]
 SIM_TIME = 100.0  # simulation time [s]
-MAX_RANGE = 4000.0  # maximum observation range
+MAX_RANGE = 3800.0  # maximum observation range
 STATE_SIZE = 3  # State size [x,y,yaw]
 
 # Covariance parameter of Graph Based SLAM
@@ -45,7 +45,7 @@ C_SIGMA3 = np.deg2rad(1.0)
 MAX_ITR = 20  # Maximum iteration
 
 show_graph_d_time = 1.0  # [s]
-show_animation = True
+show_animation = False
 
 
 raw_data_old = []
@@ -188,10 +188,8 @@ def graph_based_slam(x_init, hz):
         H = np.zeros((n, n))
         b = np.zeros((n, 1))
 
-        
         for edge in edges:
             H, b = fill_H_and_b(H, b, edge)
-        
         
         # to fix origin
         H[0:STATE_SIZE, 0:STATE_SIZE] += np.identity(STATE_SIZE)
@@ -218,7 +216,7 @@ def calc_input():
 
 
 def observation(xTrue, xd, u, RFID):
-    xTrue = motion_model(xTrue, u)
+   
     # add noise to gps x-y
     z = np.zeros((0, 4))
 
@@ -245,7 +243,6 @@ def observation(xTrue, xd, u, RFID):
     xd = motion_model(xd, ud)
 
     return xTrue, z, xd, ud
-
 
 def motion_model(x, u):
     F = np.array([[1.0, 0, 0],
@@ -255,59 +252,18 @@ def motion_model(x, u):
     B = np.array([[DT * math.cos(x[2, 0]), 0],
                   [DT * math.sin(x[2, 0]), 0],
                   [0.0, DT]])
-    
-    x = F @ x + B @ u
-
-    return x
-
-def motion_model_jz(x, u):
-    F = np.array([[1.0, 0, 0],
-                  [0, 1.0, 0],
-                  [0, 0, 1.0]])
-
-    B = np.array([[DT * math.cos(x[2, 0]), 0],
-                  [DT * math.sin(x[2, 0]), 0],
-                  [0.0, DT]])
-    
     x = F @ x + B @ u
     return x
+
 
 def pi_2_pi(angle):
     return (angle + math.pi) % (2 * math.pi) - math.pi
 
-def observation_jz(xTrue, xd, u, RFID ):
-    
-    xTrue = motion_model(xTrue, u)
 
-    # add noise to gps x-y
-    z = np.zeros((0, 4))
-    
-    for i in range(len(RFID[:, 0])):
-        dx = RFID[i, 0] - xTrue[0, 0]
-        dy = RFID[i, 1] - xTrue[1, 0]
-        d = math.hypot(dx, dy)
-        angle = pi_2_pi(math.atan2(dy, dx)) - xTrue[2, 0]
-        phi = pi_2_pi(math.atan2(dy, dx))
-        
-        if d <= MAX_RANGE:
-            dn = d + np.random.randn() * Q_sim[0, 0]  # add noise
-            angle_noise = np.random.randn() * Q_sim[1, 1]
-            angle += angle_noise
-            phi += angle_noise
-            zi = np.array([dn, angle, phi, i])
-            z = np.vstack((z, zi))
-    # add noise to input
-    ud1 = u[0, 0] + np.random.randn() * R_sim[0, 0]
-    ud2 = u[1, 0] + np.random.randn() * R_sim[1, 1]
-    ud = np.array([[ud1, ud2]]).T
-
-    xd = motion_model(xd, ud)
-    
-    return xTrue, z, xd, ud
 
 def observation_jz2(xTrue, xd, u, RFID, lmPairs, obs):
     
-    xTrue = motion_model_jz(xTrue, u)
+    xTrue = motion_model(xTrue, u)
     
     '''
     todo: wir übernehmen nur aktuelle landmarken und geben als distanzen die sensordaten (winkel, distanz an d und angle/phi)
@@ -345,17 +301,16 @@ def observation_jz2(xTrue, xd, u, RFID, lmPairs, obs):
     ud2 = u[1, 0] + np.random.randn() * R_sim[1, 1]
     ud = np.array([[ud1, ud2]]).T
 
-    xd = motion_model_jz(xd, ud)
+    xd = motion_model(xd, ud)
     
     return xTrue, z, xd, ud
 
-def main_jz(lmMode):
+def main():
     robot = DataManager()
-    nsim = 3
+    #f = open("Testlauf_Etage2_GebB_30072022.csv")
+    
     f = open("Testlauf_Etage2_GebB_30072022.csv")
     j = 0
-    edgeData = []
-    poseData = [(0,0,0,0)]
     LINE = '###################################################################'
     # Init Data for Graphslam 
     xTrue = np.zeros((STATE_SIZE, 1))# State Vector [x y yaw v]'
@@ -367,181 +322,68 @@ def main_jz(lmMode):
     d_time = 0.0
     init = False
     time = 0.0
+    landmarks = [] # contains all Landmarks over all scans
     
     for l in f: #Simuliert die eingehenden Bluetoothdaten 
-        if j < 90:
-            print('*Datensatz: ', j+1, ' ******************************************************************************************************')
-            sp = l.split(sep = ";")
-            robot.SplitDataStep5(sp)
-            robot.CreateRobotData(j)
-            #robot.PlotSensorPoseData()
-            #robot.PlotScanDataPoints('no400')
-            #plt.title(j+1)
-            #show()
-            
-            # Start SLAM implementation
-            
-            #ICP###################################################################
-            
-            if lmMode == 'prepareICP':
+        sp = l.split(sep = ";")
+        robot.SplitDataStep5(sp)
+        robot.CreateRobotData(j)
+        
+        # Start SLAM implementation
+
+        lmMode = 'allLandmarks'
+        landmarks = []
+        for z,line in enumerate(robot.all_Data):
+            if lmMode == 'FilterSingleObs':
+                lmModeTitle = 'gefilterte Messpunkte'
                 previous_points = np.array([])
                 current_points = np.array([])
-                if j > 0:
-                    previous_points, current_points = robot.PrepareICP(j)
-                    
+                if z > 0:
+                    previous_points, current_points = robot.FilterSingleObservationPoints(z)
                 if len(current_points) != 0:
-                    print('anzahl PP: ',len(previous_points[0]))
-                    print('pp', previous_points)
-                    print('anzahl CP: ',len(current_points[0]))
-                    print('cc', current_points)
-                    RFID = np.array([(point[0], point[1],0) for point in current_points])
-                    
-                else:
-                    validLandmarks = robot.GetValidLandmarks(1)
-                    RFID = np.array([(landmark[1], landmark[2],0) for landmark in validLandmarks])
-            elif lmMode == 'allPoints':
-                allPoints = []
+                    puffer = []
+                    listX = current_points[0]
+                    listY = current_points[1]
+                    for i, value in enumerate(listX):
+                        puffer  += {(value, listY[i])}
+                    landmarks += [(point[0], point[1]) for point in puffer]
+                else: # first step or no matching points
+                    validLM = []   
+                    validLM = robot.GetValidLandmarks(1) #try to get landmarks  
+                    for landmark in validLM:
+                        landmarks += {(landmark[1],landmark[2])}
+                RFID = RFID = np.array([(landmark[0], landmark[1],0) for landmark in landmarks])
+            elif lmMode == 'allLandmarks':
+                lmModeTitle = 'all Landmarks'
+                landmarks += [(landmark[1], landmark[2]) for landmark in robot.landmarksInGC[z]]
+                RFID = RFID = np.array([(landmark[0], landmark[1],0) for landmark in landmarks])
+            elif lmMode == 'validLm1':
+                lmModeTitle = 'valide Landmarken'
+                landmarks = robot.GetValidLandmarks(1)
+                RFID = RFID = np.array([(landmark[1], landmark[2],0) for landmark in landmarks])
+            elif lmMode == 'allPoints': # just take it all
+                lmModeTitle = 'alle Messpunkte'
                 for line in robot.scanDataPointsNo400:
                     for tupel in line:
-                        allPoints += {tupel}
-                RFID = np.array([(landmark[0], landmark[1],0) for landmark in allPoints])
-            elif lmMode == 'aktLandmarks':
-                RFID = np.array([(landmark[0], landmark[1]) for landmark in robot.landmarksInGC[j]])
-            elif lmMode == 'ICP':
-                return 0
-            elif lmMode == 'validLm1':
-                validLandmarks = robot.GetValidLandmarks(1)
-                RFID = np.array([(landmark[1], landmark[2],0, landmark[0]) for landmark in validLandmarks])
+                        landmarks += {tupel}
+                RFID = RFID = np.array([(landmark[0], landmark[1],0) for landmark in landmarks])
            
-            
-            
-            xDR = np.array([[robot.sensor_pose_data[j][0]],
-                               [robot.sensor_pose_data[j][1]],
-                               [robot.sensor_pose_data[j][2]]
-                               ])
-            #print('xDR: ', xDR)
-            print('RFID ', len(RFID))
-            if not init:
-                hxTrue = xTrue
-                hxDR = xTrue
-                init = True
-            else:
-                hxDR = np.hstack((hxDR, xDR))
-                hxTrue = np.hstack((hxTrue, xTrue))
-            time += DT
-            d_time += DT
-            #u = calc_input()  #brauchen wir nicht stattdessen:
-                    
-            if j == 0:
-                u = np.array([[0,0]]).T
-            else:
-                d = EuclideanDistance(robot.sensor_pose_data[j-1][0],
-                                      robot.sensor_pose_data[j-1][1],
-                                      robot.sensor_pose_data[j][0],
-                                      robot.sensor_pose_data[j][1] )
-
-                diffTheta = robot.sensor_pose_data[j][2]-robot.sensor_pose_data[j-1][2]
-                u = np.array([[d,diffTheta]]).T
-            
-            print(LINE)
-            
-            doIt = True
-            if doIt:
-                xTrue, z, xDR, ud = observation(xTrue, xDR, u, RFID)
-    
-                hz.append(z)
+            if len(landmarks) == 0: # lmMode didn't get us any landmarks, so we take all scanpoints so far
+                for tupel in robot.scanDataPointsNo400[z]:
+                    landmarks += {tupel}
+                RFID = np.array([(landmark[0], landmark[1],0) for landmark in landmarks])
                 
-                x_opt = graph_based_slam(hxDR, hz)
-                print(LINE)
                 
-                #print('x_opt: ', x_opt)
-                d_time = 0.0
-    
-                if show_animation:  # pragma: no cover
-                    plt.cla()
-                    # for stopping simulation with the esc key.
-                    plt.gcf().canvas.mpl_connect(
-                        'key_release_event',
-                        lambda event: [exit(0) if event.key == 'escape' else None])
-                    plt.plot(RFID[:, 0], RFID[:, 1], ".k")
-                    plt.plot(hxTrue[0, :].flatten(),
-                             hxTrue[1, :].flatten(), "-b")
-                    plt.plot(hxDR[0, :].flatten(),
-                             hxDR[1, :].flatten(), "-k")
-                    plt.plot(x_opt[0, :].flatten(),
-                             x_opt[1, :].flatten(), "-r")
-                    plt.axis("equal")
-                    plt.grid(True)
-                    plt.title("Measurement: " + str(j+1)[0:5])
-                    plt.pause(1.0)
-        j += 1
-    f.close()
-    return 0
+            
+        
+        print('RFID ', len(RFID))
 
-def RunGraphBasedSLAM(lmMode):
-    ##############################################################################################################
-    robot = DataManager()
-    nsim = 3
-    j = 0
-    edgeData = []
-    poseData = [(0,0,0,0)]
-    LINE = '###################################################################'
-    # Init Data for Graphslam 
-    xTrue = np.zeros((STATE_SIZE, 1))# State Vector [x y yaw v]'
-    xDR = np.zeros((STATE_SIZE, 1))  # Dead reckoning
-    # history
-    hxTrue = []
-    hxDR = []
-    hz = []
-    d_time = 0.0
-    init = False
-    time = 0.0
-    
-    print("länge: ", len(Roommap.data_all))
-    for index, l in enumerate(Roommap.data_all):
-        print("Datensatz: ",j , "Inhalt:", l)
-        robot.SplitDataStep5(l)
-        robot.CreateRobotData(j)
-
-        # Start SLAM implementation
-        lmMode = 'validLm1'
-       
-        if lmMode == 'prepareICP':
-            previous_points = np.array([])
-            current_points = np.array([])
-            if j > 0:
-                previous_points, current_points = robot.PrepareICP(j)
-                
-            if len(current_points) != 0:
-                print('anzahl PP: ',len(previous_points[0]))
-                print('pp', previous_points)
-                print('anzahl CP: ',len(current_points[0]))
-                print('cc', current_points)
-                RFID = np.array([(point[0], point[1],0) for point in current_points])
-               
-            else:
-                validLandmarks = robot.GetValidLandmarks(1)
-                RFID = np.array([(landmark[1], landmark[2],0) for landmark in validLandmarks])
-        elif lmMode == 'allPoints':
-            allPoints = []
-            for line in robot.scanDataPointsNo400:
-                for tupel in line:
-                    allPoints += {tupel}
-            RFID = np.array([(landmark[0], landmark[1],0) for landmark in allPoints])
-        elif lmMode == 'aktLandmarks':
-            RFID = np.array([(landmark[0], landmark[1]) for landmark in robot.landmarksInGC[j]])
-        elif lmMode == 'ICP':
-            return 0
-        elif lmMode == 'validLm1':
-            validLandmarks = robot.GetValidLandmarks(1)
-            RFID = np.array([(landmark[1], landmark[2],0, landmark[0]) for landmark in validLandmarks])
-        else:
-            print("No valid Landmarkmode selected")
-            return 0
         xDR = np.array([[robot.sensor_pose_data[j][0]],
                            [robot.sensor_pose_data[j][1]],
                            [robot.sensor_pose_data[j][2]]
                            ])
+        #print('xDR: ', xDR)
+ 
         if not init:
             hxTrue = xTrue
             hxDR = xTrue
@@ -549,30 +391,84 @@ def RunGraphBasedSLAM(lmMode):
         else:
             hxDR = np.hstack((hxDR, xDR))
             hxTrue = np.hstack((hxTrue, xTrue))
-        time += DT
-        d_time += DT
-        #u = calc_input()  #brauchen wir nicht stattdessen:
-               
+    
+        
+        SIM_STEP_DRIVE = rd.SIM_STEP_DRIVE
+        SIM_STEP_ROT45 = rd.SIM_STEP_ROT45
+        SIM_STEP_ROT90 = rd.SIM_STEP_ROT90
+        mData = robot.motor_positions[j]
         if j == 0:
             u = np.array([[0,0]]).T
+            DT = 0
         else:
-            d = EuclideanDistance(robot.sensor_pose_data[j-1][0],
-                                  robot.sensor_pose_data[j-1][1],
-                                  robot.sensor_pose_data[j][0],
-                                  robot.sensor_pose_data[j][1] )
+            if mData[0] == 0:    
+                v = rd.speed60rpm*SIM_STEP_DRIVE  # [m/s]
+                yaw_rate = 0.0
+                u = np.array([[v, yaw_rate]]).T
+                DT = SIM_STEP_DRIVE
+                xTrue = motion_model(xTrue, u)
+            elif mData[0] == 999: 
+                v = -rd.speed60rpm*SIM_STEP_DRIVE  # [m/s]
+                yaw_rate = 0.0  # [rad/s] 
+                u = np.array([[v, yaw_rate]]).T
+                DT = SIM_STEP_DRIVE
+                xTrue = motion_model(xTrue, u)
+            elif mData[0] == 90: 
+                v = 0.0001  # [m/s]
+                yaw_rate = rd.angularVeocity60rpm
+                u = np.array([[v, yaw_rate]]).T
+                DT = SIM_STEP_ROT90
+                xTrue = motion_model(xTrue, u)
+            elif mData[0] == -90: 
+                v = 0.0001  # [m/s]
+                yaw_rate = -rd.angularVeocity60rpm
+                u = np.array([[v, yaw_rate]]).T
+                DT = SIM_STEP_ROT90
+                xTrue = motion_model(xTrue, u)
+            else: 
+                d = EuclideanDistance(robot.sensor_pose_data[j-1][0],
+                                      robot.sensor_pose_data[j-1][1],
+                                      robot.sensor_pose_data[j][0],
+                                      robot.sensor_pose_data[j][1] )
+                diffTheta = robot.sensor_pose_data[j][2]-robot.sensor_pose_data[j-1][2]
+                u = np.array([[d,diffTheta]]).T
+                DT = SIM_STEP_ROT45
+                xTrue = motion_model(xTrue, u)
+        
+        time += DT
+        d_time += DT 
+        
 
-            diffTheta = robot.sensor_pose_data[j][2]-robot.sensor_pose_data[j-1][2]
-            u = np.array([[d,diffTheta]]).T
-            
         xTrue, z, xDR, ud = observation(xTrue, xDR, u, RFID)
-        hz.append(z)
-        x_opt = graph_based_slam(hxDR, hz)
 
+        hz.append(z) 
+        x_opt = graph_based_slam(hxDR, hz)
+        print(LINE)
         d_time = 0.0
+        
+        show_animation = True
+        if show_animation:  # pragma: no cover
+            plt.cla()
+            # for stopping simulation with the esc key.
+            plt.gcf().canvas.mpl_connect(
+                'key_release_event',
+                lambda event: [exit(0) if event.key == 'escape' else None])
+            plt.plot(RFID[:, 0], RFID[:, 1], ".k")
+            plt.plot(hxTrue[0, :].flatten(),
+                     hxTrue[1, :].flatten(), "-b")
+            plt.plot(hxDR[0, :].flatten(),
+                     hxDR[1, :].flatten(), "-k")
+            plt.plot(x_opt[0, :].flatten(),
+                     x_opt[1, :].flatten(), "-g")
+            plt.axis("equal")
+            plt.grid(True)
+            plt.title("Measurement: " + str(j+1)[0:5] + lmModeTitle)
+            plt.pause(1.0)
+        
         j += 1
-    ##############################################################################################################
+        
+    x_opt = graph_based_slam(hxDR, hz)
     plt.cla()
-    # for stopping simulation with the esc key.
     plt.gcf().canvas.mpl_connect(
         'key_release_event',
         lambda event: [exit(0) if event.key == 'escape' else None])
@@ -582,38 +478,96 @@ def RunGraphBasedSLAM(lmMode):
     plt.plot(hxDR[0, :].flatten(),
              hxDR[1, :].flatten(), "-k")
     plt.plot(x_opt[0, :].flatten(),
-             x_opt[1, :].flatten(), "-r")
+             x_opt[1, :].flatten(), "-g")
     plt.axis("equal")
     plt.grid(True)
-    plt.title("Graph-Based-SLAM result")
-    plt.pause(1.0)
-    return plt
-
-def main():
-    print(__file__ + " start!!")
+    plt.title("Graph Based Slam, Landmarkmode: " + lmModeTitle)
+    plt.show()
     
-    time = 0.0
+    
+    robot.PlotScanDataPoints('no400')
+    robot.PlotSensorPoseData()
+    plt.axis("equal")
+    plt.grid(True)
+    plt.title("Before Graph Based Slam, Landmarkmode: " + lmModeTitle)
+    plt.show()
+    
+    
+    newRobot = robot.UpdateDataFromSLAM(x_opt) 
+    newRobot.PlotScanDataPoints('no400')
+    newRobot.PlotSensorPoseData()
+    plt.axis("equal")
+    plt.grid(True)
+    plt.title("After Graph Based Slam, Landmarkmode: " + lmModeTitle)
+    plt.show()
+    f.close()
+    return 0
 
-    # RFID positions [x, y, yaw]
-    RFID = np.array([[10.0, -2.0, 0.0],
-                     [15.0, 10.0, 0.0],
-                     [3.0, 15.0, 0.0],
-                     [-5.0, 20.0, 0.0],
-                     [-5.0, 5.0, 0.0]
-                     ])
-
-    # State Vector [x y yaw v]'
-    xTrue = np.zeros((STATE_SIZE, 1))
+def RunGraphBasedSLAM(lmMode):
+    ##############################################################################################################
+    robot = DataManager()
+    # Init Data for Graphslam 
+    xTrue = np.zeros((STATE_SIZE, 1))# State Vector [x y yaw v]'
     xDR = np.zeros((STATE_SIZE, 1))  # Dead reckoning
-
     # history
     hxTrue = []
     hxDR = []
     hz = []
     d_time = 0.0
     init = False
-    while SIM_TIME >= time:
-
+    time = 0.0
+    
+    for j, l in enumerate(Roommap.data_all):
+        sp = l.split(sep = ";")
+        robot.SplitDataStep5(sp)
+        robot.CreateRobotData(j)
+        # Start SLAM implementation
+        
+        # Landmarkmode is fixed to allLandmarks. Other Landmarkmodes didn't word well but stayed for further testing
+        lmMode = 'allLandmarks'
+        landmarks = []
+        for z,line in enumerate(robot.all_Data):
+            if lmMode == 'FilterSingleObs':
+                previous_points = np.array([])
+                current_points = np.array([])
+                if z > 0:
+                    previous_points, current_points = robot.FilterSingleObservationPoints(z)
+                if len(current_points) != 0:
+                    puffer = []
+                    listX = current_points[0]
+                    listY = current_points[1]
+                    for i, value in enumerate(listX):
+                        puffer  += {(value, listY[i])}
+                    landmarks += [(point[0], point[1]) for point in puffer]
+                else: # first step or no matching points
+                    validLM = []   
+                    validLM = robot.GetValidLandmarks(1) #try to get landmarks  
+                    for landmark in validLM:
+                        landmarks += {(landmark[1],landmark[2])}
+                RFID = RFID = np.array([(landmark[0], landmark[1],0) for landmark in landmarks])
+            elif lmMode == 'allLandmarks':
+                landmarks += [(landmark[1], landmark[2]) for landmark in robot.landmarksInGC[z]]
+                RFID = RFID = np.array([(landmark[0], landmark[1],0) for landmark in landmarks])
+            elif lmMode == 'validLm1':
+                landmarks = robot.GetValidLandmarks(1)
+                RFID = RFID = np.array([(landmark[1], landmark[2],0) for landmark in landmarks])
+            elif lmMode == 'allPoints': # just take it all
+                for line in robot.scanDataPointsNo400:
+                    for tupel in line:
+                        landmarks += {tupel}
+                RFID = RFID = np.array([(landmark[0], landmark[1],0) for landmark in landmarks])
+           
+            if len(landmarks) == 0: # lmMode didn't get us any landmarks, so we take all scanpoints so far
+                for tupel in robot.scanDataPointsNo400[z]:
+                    landmarks += {tupel}
+                RFID = np.array([(landmark[0], landmark[1],0) for landmark in landmarks])
+                
+        xDR = np.array([[robot.sensor_pose_data[j][0]],
+                           [robot.sensor_pose_data[j][1]],
+                           [robot.sensor_pose_data[j][2]]
+                           ])
+        
+        #Initialize Data
         if not init:
             hxTrue = xTrue
             hxDR = xTrue
@@ -621,44 +575,76 @@ def main():
         else:
             hxDR = np.hstack((hxDR, xDR))
             hxTrue = np.hstack((hxTrue, xTrue))
-
+            
+        # get robot specific Simulation data für prediction
+        SIM_STEP_DRIVE = rd.SIM_STEP_DRIVE
+        SIM_STEP_ROT45 = rd.SIM_STEP_ROT45
+        SIM_STEP_ROT90 = rd.SIM_STEP_ROT90
+        mData = robot.motor_positions[j]
+        
+        # setting the prediction
+        if j == 0:
+            u = np.array([[0,0]]).T
+            DT = 0
+        else:
+            if mData[0] == 0:    
+                v = rd.speed60rpm*SIM_STEP_DRIVE  # [m/s]
+                yaw_rate = 0.0
+                u = np.array([[v, yaw_rate]]).T
+                DT = SIM_STEP_DRIVE
+                xTrue = motion_model(xTrue, u)
+            elif mData[0] == 999: 
+                v = -rd.speed60rpm*SIM_STEP_DRIVE  # [m/s]
+                yaw_rate = 0.0  # [rad/s] 
+                u = np.array([[v, yaw_rate]]).T
+                DT = SIM_STEP_DRIVE
+                xTrue = motion_model(xTrue, u)
+            elif mData[0] == 90: 
+                v = 0.0001  # [m/s]
+                yaw_rate = rd.angularVeocity60rpm
+                u = np.array([[v, yaw_rate]]).T
+                DT = SIM_STEP_ROT90
+                xTrue = motion_model(xTrue, u)
+            elif mData[0] == -90: 
+                v = 0.0001  # [m/s]
+                yaw_rate = -rd.angularVeocity60rpm
+                u = np.array([[v, yaw_rate]]).T
+                DT = SIM_STEP_ROT90
+                xTrue = motion_model(xTrue, u)
+            else: 
+                d = EuclideanDistance(robot.sensor_pose_data[j-1][0],
+                                      robot.sensor_pose_data[j-1][1],
+                                      robot.sensor_pose_data[j][0],
+                                      robot.sensor_pose_data[j][1] )
+                diffTheta = robot.sensor_pose_data[j][2]-robot.sensor_pose_data[j-1][2]
+                u = np.array([[d,diffTheta]]).T
+                DT = SIM_STEP_ROT45
+                xTrue = motion_model(xTrue, u)
+        
         time += DT
-        d_time += DT
+        d_time += DT 
         
-        print('RFID:', RFID)
-        
-        print('xTrue1: ', xTrue)
-        u = calc_input()
-        print('xTrue2: ', xTrue)
+        # create the observations
         xTrue, z, xDR, ud = observation(xTrue, xDR, u, RFID)
+    
+        hz.append(z) 
+        
+        # build constrains and perform graph_based_slam
+        x_opt = graph_based_slam(hxDR, hz)
+        d_time = 0.0
+        
+    # create new instance of Datamanager and fill with optimized Data
+    newRobot = robot.UpdateDataFromSLAM(x_opt) 
+    plt.cla()
+    newRobot = robot.UpdateDataFromSLAM(x_opt) 
+    newRobot.PlotScanDataPoints('no400')
+    newRobot.PlotSensorPoseData()
+    plt.axis("equal")
+    plt.grid(True)
+    plt.title("Graph Based Slam Result")
+    plt.show()
+    return plt
 
-        hz.append(z)
-
-        if d_time >= show_graph_d_time:
-            x_opt = graph_based_slam(hxDR, hz)
-            d_time = 0.0
-
-            if show_animation:  # pragma: no cover
-                plt.cla()
-                # for stopping simulation with the esc key.
-                plt.gcf().canvas.mpl_connect(
-                    'key_release_event',
-                    lambda event: [exit(0) if event.key == 'escape' else None])
-                plt.plot(RFID[:, 0], RFID[:, 1], "*k")
-
-                plt.plot(hxTrue[0, :].flatten(),
-                         hxTrue[1, :].flatten(), "-b")
-                plt.plot(hxDR[0, :].flatten(),
-                         hxDR[1, :].flatten(), "-k")
-                plt.plot(x_opt[0, :].flatten(),
-                         x_opt[1, :].flatten(), "-r")
-                plt.axis("equal")
-                plt.grid(True)
-                plt.title("Time" + str(time)[0:5])
-                plt.pause(1.0)
-                
 if __name__ == '__main__':
-    #main()
-    #main_jz('validLm1')
-    main_jz('prepareICP')
+    main()
     
