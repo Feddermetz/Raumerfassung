@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Aug  1 15:42:17 2022
-
 Testprogramm für ICP mit verschiedenen Datenübergaben.
 
-@author: Jan
+@author: JanZimon
 """
 
 from pylab import show
@@ -54,14 +52,11 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
     cy = np.array([])
 
     error = 999
-    print("Roboteraktion", robot.motor_positions[j][0]) 
     for tupel in robot.scanDataPoints[j-1]:
     # previous points
-        #print(tupel)
         px = np.append(px, tupel[0])
         py = np.append(py,tupel[1])
     previous_Points = np.vstack((px, py))
-    #print(previous_points)
     for tupel in robot.scanDataPoints[j]:
     # previous points
         cx = np.append(cx, tupel[0])
@@ -69,7 +64,7 @@ for l in f: #Simuliert die eingehenden Bluetoothdaten
     current_Points = np.vstack((cx, cy))
     print('anzahl PP: ',len(previous_Points[0]))
     print('anzahl CP: ',len(current_Points[0]))
-    #ICP###################################################################
+    #ICP#####################
     for _ in range(nsim):
         converged, error, R, T = icp_matching(previous_Points, current_Points)
         print("R:", R)

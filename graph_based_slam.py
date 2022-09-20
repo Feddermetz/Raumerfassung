@@ -518,8 +518,7 @@ def RunGraphBasedSLAM(lmMode):
     time = 0.0
     
     for j, l in enumerate(Roommap.data_all):
-        sp = l.split(sep = ";")
-        robot.SplitDataStep5(sp)
+        robot.SplitDataStep5(data_all)
         robot.CreateRobotData(j)
         # Start SLAM implementation
         

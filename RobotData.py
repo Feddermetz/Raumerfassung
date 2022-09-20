@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue May 31 14:06:44 2022
-@author: Jan
+@author: Jan Zimon
 """
 
 from math import sin, cos, pi, radians
@@ -31,6 +31,7 @@ minObservations = 2
 SIM_STEP_DRIVE = 10
 SIM_STEP_ROT45 = 0.62
 SIM_STEP_ROT90 = 1.236
+
 def CalcPivotPose(oldPose, motorData):
     '''
     Calculates the pose of the Robot for differential driven Robots
